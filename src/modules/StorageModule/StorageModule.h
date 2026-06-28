@@ -38,6 +38,8 @@ public:
     // Дозапись строки в файл (создаёт при отсутствии). Доступ к SD на общей
     // шине обёрнут SpiBusGuard. Для CSV-логов (wardriving и т.п.).
     bool appendLine(const String& path, const String& line);
+    bool writeFile(const String& path, const String& content);   // перезапись целиком
+    String readFile(const String& path);                          // весь файл строкой
     bool exists(const String& path);
     // Список имён файлов в каталоге (опц. фильтр по расширению, напр. ".txt").
     std::vector<String> listDir(const String& dir, const char* ext = nullptr);

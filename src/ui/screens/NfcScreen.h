@@ -14,7 +14,7 @@ public:
     void onEvent(const Event& e) override;
 
 private:
-    static constexpr int kRows = 3;     // Читать, Сохранить, Записать
+    static constexpr int kRows = 4;     // Читать, Дамп, Клон, Записать
 
     lv_obj_t* makeAction(lv_obj_t* parent, int idx, const char* sym,
                          lv_color_t color, const char* label, bool sep);

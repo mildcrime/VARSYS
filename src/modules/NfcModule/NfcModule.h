@@ -28,6 +28,30 @@ public:
 
     const String& lastUid() const { return _lastUid; }
 
+    // --- Полный дамп Mifare Classic 1K (16 секторов × 4 блока) ---
+    static constexpr int kSectors = 16;
+    static constexpr int kBlocks  = 64;
+    struct ClassicDump {
+        uint8_t uid[7]    = {0};
+        uint8_t uidLen    = 0;
+        uint8_t block[kBlocks][16] = {{0}};
+        bool    blockOk[kBlocks]   = {false};
+        uint8_t keyA[kSectors][6]  = {{0}};
+        uint8_t keyB[kSectors][6]  = {{0}};
+        bool    keyAok[kSectors]   = {false};
+        bool    keyBok[kSectors]   = {false};
+        int     blocksRead = 0;
+    };
+
+    // Полный дамп с подбором ключей по словарю. true — метка прочитана.
+    bool dumpClassic(ClassicDump& out);
+    // Сохранить дамп в /nfc/<uid>.dump (текстовый hex). pathOut — итоговый путь.
+    bool saveDump(const ClassicDump& d, String& pathOut);
+    // Загрузить дамп из /nfc/<name>.
+    bool loadDump(const String& name, ClassicDump& d);
+    // Записать дата-блоки дампа обратно на карту. Возврат — число записанных.
+    int  cloneDump(const ClassicDump& d);
+
 private:
     static NfcModule* _self;
     Adafruit_PN532 _nfc{PN532_IRQ, PN532_RF_REST};   // конструктор I2C

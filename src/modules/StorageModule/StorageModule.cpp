@@ -47,6 +47,27 @@ bool StorageModule::appendLine(const String& path, const String& line) {
     return true;
 }
 
+bool StorageModule::writeFile(const String& path, const String& content) {
+    if (!_fs) return false;
+    hal::SpiBusGuard guard;
+    File f = _fs->open(path, FILE_WRITE);
+    if (!f) { LOGE(TAG, "write open failed: %s", path.c_str()); return false; }
+    f.print(content);
+    f.close();
+    return true;
+}
+
+String StorageModule::readFile(const String& path) {
+    String out;
+    if (!_fs) return out;
+    hal::SpiBusGuard guard;
+    File f = _fs->open(path, FILE_READ);
+    if (!f) return out;
+    out = f.readString();
+    f.close();
+    return out;
+}
+
 bool StorageModule::exists(const String& path) {
     if (!_fs) return false;
     hal::SpiBusGuard guard;

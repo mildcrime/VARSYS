@@ -11,7 +11,7 @@ lv_obj_t* NfcScreen::makeAction(lv_obj_t* parent, int idx, const char* sym,
                                 lv_color_t color, const char* label, bool sep) {
     lv_obj_t* row = lv_obj_create(parent);
     lv_obj_remove_style_all(row);
-    lv_obj_set_size(row, lv_pct(100), 38);
+    lv_obj_set_size(row, lv_pct(100), 29);
     lv_obj_set_style_radius(row, 8, 0);
     lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
     if (sep) {
@@ -72,9 +72,10 @@ void NfcScreen::onCreate(lv_obj_t* parent) {
     lv_obj_set_size(right, 132, 122);
     lv_obj_align(right, LV_ALIGN_BOTTOM_RIGHT, -10, -8);
     lv_obj_set_flex_flow(right, LV_FLEX_FLOW_COLUMN);
-    makeAction(right, 0, ICON_NFC,    cBlue(),  tr(STR_READ), true);
-    makeAction(right, 1, ICON_SAVE,   cGreen(), tr(STR_SAVE), true);
-    makeAction(right, 2, ICON_RECORD, cRed(),   "Write",      false);
+    makeAction(right, 0, ICON_NFC,    cBlue(),   tr(STR_READ), true);
+    makeAction(right, 1, ICON_SAVE,   cGreen(),  "Dump",       true);
+    makeAction(right, 2, ICON_FOLDER, cOrange(), "Clone",      true);
+    makeAction(right, 3, ICON_RECORD, cRed(),    "Write",      false);
 }
 
 void NfcScreen::select(int idx, bool on) {
@@ -111,15 +112,35 @@ void NfcScreen::activateSelected() {
             lv_label_set_text(_status, tr(STR_NO_TAG));
             Notify::toast(tr(STR_NO_TAG), Notify::Warn);
         }
-    } else if (_selected == 1) {    // Сохранить
-        if (nfc.lastUid().isEmpty()) { Notify::toast(tr(STR_NO_TAG), Notify::Warn); return; }
-        fs::FS* fs = StorageModule::instance().fs();
-        if (fs) {
-            if (!fs->exists("/nfc")) fs->mkdir("/nfc");
-            File f = fs->open("/nfc/" + nfc.lastUid() + ".txt", FILE_WRITE);
-            if (f) { f.printf("UID: %s\n", nfc.lastUid().c_str()); f.close(); }
-            Notify::toast(tr(STR_SAVED), Notify::Success);
+    } else if (_selected == 1) {    // Полный дамп со словарём -> файл
+        lv_label_set_text(_status, tr(STR_LISTENING));
+        lv_refr_now(NULL);
+        NfcModule::ClassicDump d;
+        if (!nfc.dumpClassic(d)) {
+            lv_label_set_text(_status, tr(STR_NO_TAG));
+            Notify::toast(tr(STR_NO_TAG), Notify::Warn);
+            return;
         }
+        String path;
+        bool saved = nfc.saveDump(d, path);
+        lv_label_set_text_fmt(_status, "%d/64 blk", d.blocksRead);
+        lv_obj_set_style_text_color(_status, d.blocksRead == 64 ? cGreen() : cOrange(), 0);
+        Notify::toast(saved ? tr(STR_SAVED) : tr(STR_NO_MODULE),
+                      saved ? Notify::Success : Notify::Error);
+    } else if (_selected == 2) {    // Клон: записать последний дамп на карту
+        if (nfc.lastUid().isEmpty()) { Notify::toast(tr(STR_NO_TAG), Notify::Warn); return; }
+        NfcModule::ClassicDump d;
+        if (!nfc.loadDump(nfc.lastUid() + ".dump", d)) {
+            Notify::toast(tr(STR_EMPTY), Notify::Warn);
+            return;
+        }
+        lv_label_set_text(_status, tr(STR_LISTENING));
+        lv_refr_now(NULL);
+        int w = nfc.cloneDump(d);
+        lv_label_set_text_fmt(_status, "wr %d blk", w);
+        lv_obj_set_style_text_color(_status, w > 0 ? cGreen() : cRed(), 0);
+        Notify::toast(w > 0 ? tr(STR_SAVED) : tr(STR_NO_TAG),
+                      w > 0 ? Notify::Success : Notify::Warn);
     } else {                        // Записать демо-блок (Mifare block 4)
         uint8_t demo[16] = {0};
         memcpy(demo, "VARSYS", 6);
