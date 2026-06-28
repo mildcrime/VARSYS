@@ -1,0 +1,17 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.piovenv/
+build.log
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Сборка / прочее
+*.bin
+*.elf
+*.map
+.DS_Store

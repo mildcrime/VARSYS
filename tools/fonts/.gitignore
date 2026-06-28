@@ -1,0 +1,9 @@
+# Загружаемые/устанавливаемые артефакты — не хранить в репозитории.
+# Восстанавливаются командами из README.md, затем `python3 generate_fonts.py`.
+node_modules/
+package/
+inter/
+*.tgz
+inter.zip
+package-lock.json
+package.json
