@@ -195,7 +195,11 @@ void CC1101::enterIdle() {
 }
 
 // Канал RMT для GDO0 (один на приём и передачу, переконфигурируется).
-static constexpr rmt_channel_t RMT_CH = RMT_CHANNEL_0;
+// ВАЖНО: FastLED (RGB) захватывает RMT_CHANNEL_0 на первой show() (вспышка при
+// загрузке) и держит постоянно -> CC1101 на канале 0 не смог бы поставить
+// драйвер (rmt_driver_install падает) и запись/воспроизведение Sub-GHz не
+// работали бы. Поэтому канал 2 (FastLED=0, IR=3).
+static constexpr rmt_channel_t RMT_CH = RMT_CHANNEL_2;
 static constexpr uint8_t  RMT_DIV     = 80;     // 80 МГц / 80 = 1 тик = 1 мкс
 static constexpr uint16_t RMT_MAX_DUR = 32767;  // 15-битное поле длительности
 

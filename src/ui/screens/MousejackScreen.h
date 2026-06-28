@@ -12,6 +12,7 @@ public:
     const char* name() const override { return "Mousejack"; }
     void onCreate(lv_obj_t* parent) override;
     void onShow() override;
+    void onHide() override;
     void onEvent(const Event& e) override;
 
 private:

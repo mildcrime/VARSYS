@@ -44,6 +44,7 @@ void NrfScreen::refresh() {
 }
 
 void NrfScreen::onShow() {
+    NrfModule::instance().acquire();   // занять QWIIC-порт (CE/CSN)
     if (!NrfModule::instance().present()) {
         if (!_hwPanel)
             _hwPanel = ui::hwMissingPanel(_root, "NRF24L01", "QWIIC (SPI)");
@@ -59,4 +60,5 @@ void NrfScreen::onShow() {
 
 void NrfScreen::onHide() {
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }
+    NrfModule::instance().release();   // освободить QWIIC-порт
 }

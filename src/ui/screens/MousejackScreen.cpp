@@ -97,6 +97,7 @@ void MousejackScreen::activateSelected() {
 
 void MousejackScreen::onShow() {
     NrfModule& n = NrfModule::instance();
+    n.acquire();   // занять QWIIC-порт (CE/CSN)
     if (!n.present()) {
         if (!_hwPanel)
             _hwPanel = ui::hwMissingPanel(_root, "NRF24L01", "QWIIC (SPI)");
@@ -108,6 +109,10 @@ void MousejackScreen::onShow() {
     lv_refr_now(NULL);
     n.mjScan(2000);     // promiscuous-скан (блокирующий ~2 с)
     rebuild();
+}
+
+void MousejackScreen::onHide() {
+    NrfModule::instance().release();   // освободить QWIIC-порт
 }
 
 void MousejackScreen::onEvent(const Event& e) {

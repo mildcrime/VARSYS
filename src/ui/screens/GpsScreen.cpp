@@ -2,6 +2,7 @@
 #include "ui/UITheme.h"
 #include "core/Scheduler.h"
 #include "modules/GpsModule/GpsModule.h"
+#include "modules/WardriveModule/WardriveModule.h"
 
 using namespace ui;
 
@@ -60,6 +61,7 @@ void GpsScreen::refresh() {
 }
 
 void GpsScreen::onShow() {
+    GpsModule::instance().acquire();   // занять QWIIC-порт (UART)
     refresh();
     if (_task) Scheduler::instance().cancel(_task);
     _task = Scheduler::instance().every(1000, [this] { refresh(); });
@@ -67,4 +69,6 @@ void GpsScreen::onShow() {
 
 void GpsScreen::onHide() {
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }
+    // Освобождаем QWIIC, только если wardrive не использует GPS в фоне.
+    if (!WardriveModule::instance().active()) GpsModule::instance().release();
 }

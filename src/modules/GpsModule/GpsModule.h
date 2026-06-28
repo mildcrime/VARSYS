@@ -16,6 +16,10 @@ public:
 
     static GpsModule& instance() { return *_self; }
 
+    void acquire();    // поднять UART на QWIIC (экран GPS / wardrive)
+    void release();    // освободить пины QWIIC
+    bool active() const { return _active; }
+
     bool   hasFix();
     int    sats();
     double lat();
@@ -24,4 +28,5 @@ public:
 
 private:
     static GpsModule* _self;
+    bool _active = false;
 };

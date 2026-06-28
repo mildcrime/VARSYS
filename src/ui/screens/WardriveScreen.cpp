@@ -65,6 +65,9 @@ void WardriveScreen::onShow() {
 
 void WardriveScreen::onHide() {
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }
+    // Останавливаем лог при выходе: фоновый блокирующий WiFi-скан иначе
+    // подвешивал бы остальные экраны каждые ~4 с.
+    WardriveModule::instance().deactivate();
 }
 
 void WardriveScreen::onEvent(const Event& e) {

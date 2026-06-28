@@ -18,6 +18,9 @@ public:
     bool present() const { return _present; }
     static constexpr int kChannels = 126;
 
+    void acquire();    // поднять RF24 на QWIIC (экран NRF/Mousejack)
+    void release();    // освободить пины QWIIC
+
     void resetScan();
     void scanPass();                         // один проход по каналам
     const uint8_t* activity() const { return _activity; }
@@ -41,6 +44,7 @@ public:
 private:
     static NrfModule* _self;
     bool    _present = false;
+    bool    _begun   = false;
     uint8_t _activity[kChannels] = {0};
 
     void     mjBeginRx(uint8_t ch);                  // promiscuous-настройка RX

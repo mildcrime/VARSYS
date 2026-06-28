@@ -18,6 +18,7 @@ bool WardriveModule::init() {
 
 void WardriveModule::activate() {
     if (_active) return;
+    GpsModule::instance().acquire();   // GPS на QWIIC нужен для координат
     _path = PATH;
     _seen.clear();
     _apCount = 0;
@@ -43,6 +44,7 @@ void WardriveModule::deactivate() {
     _active = false;
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }
     WifiModule::instance().radioOff();   // экономия энергии
+    GpsModule::instance().release();     // освобождаем QWIIC-порт
     LOGI(TAG, "wardrive stopped (%lu APs)", (unsigned long)_apCount);
 }
 

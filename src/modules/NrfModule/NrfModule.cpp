@@ -13,23 +13,37 @@ NrfModule* NrfModule::_self = nullptr;
 
 bool NrfModule::init() {
     _self = this;
+    // CE/CSN на пинах 43/44 — общий QWIIC-порт (GPS/NRF24/iButton). НЕ трогаем
+    // их при загрузке (иначе затираем GPS/iButton). RF24 поднимаем лениво в
+    // acquire() при заходе на экран NRF/Mousejack, освобождаем в release().
+    LOGI(TAG, "NRF24 ready (lazy on QWIIC)");
+    return true;
+}
 
+void NrfModule::acquire() {
+    if (_begun) return;
     hal::SpiBusGuard guard;
-    // Общая шина SPI с дисплеем (как у SD/CC1101).
     bool ok = s_radio.begin(&UIManager::instance().display().spi());
     _present = ok && s_radio.isChipConnected();
-    if (!_present) {
+    if (_present) {
+        s_radio.setAutoAck(false);
+        s_radio.disableCRC();
+        s_radio.setDataRate(RF24_1MBPS);
+        s_radio.startListening();
+        s_radio.stopListening();
+        LOGI(TAG, "NRF24 up");
+    } else {
         LOGW(TAG, "NRF24 not detected");
-        return true;   // не фатально
     }
-    // Режим пассивного прослушивания несущей.
-    s_radio.setAutoAck(false);
-    s_radio.disableCRC();
-    s_radio.setDataRate(RF24_1MBPS);
-    s_radio.startListening();
-    s_radio.stopListening();
-    LOGI(TAG, "NRF24 ready");
-    return true;
+    _begun = true;
+}
+
+void NrfModule::release() {
+    if (!_begun) return;
+    pinMode(PIN_NRF_CE,  INPUT);   // освобождаем общий QWIIC-порт
+    pinMode(PIN_NRF_CSN, INPUT);
+    _begun = false;
+    _present = false;
 }
 
 void NrfModule::resetScan() {

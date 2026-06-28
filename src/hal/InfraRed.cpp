@@ -6,7 +6,8 @@
 
 static const char* TAG = "IR";
 
-static constexpr rmt_channel_t IR_CH  = RMT_CHANNEL_1;   // отдельно от CC1101 (CH0)
+// Канал 3: FastLED держит ch0, CC1101 — ch2. Иначе rmt_driver_install конфликтует.
+static constexpr rmt_channel_t IR_CH  = RMT_CHANNEL_3;
 static constexpr uint8_t  IR_DIV      = 80;              // 1 тик = 1 мкс
 static constexpr uint16_t IR_MAX_DUR  = 32767;
 
