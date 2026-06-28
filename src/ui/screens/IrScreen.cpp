@@ -1,5 +1,6 @@
 #include "IrScreen.h"
 #include "ui/UITheme.h"
+#include "ui/UIManager.h"
 #include "ui/i18n.h"
 #include "ui/Notify.h"
 #include "modules/IrModule/IrModule.h"
@@ -10,7 +11,7 @@ lv_obj_t* IrScreen::makeAction(lv_obj_t* parent, int idx, const char* sym,
                                lv_color_t color, const char* label, bool sep) {
     lv_obj_t* row = lv_obj_create(parent);
     lv_obj_remove_style_all(row);
-    lv_obj_set_size(row, lv_pct(100), 38);
+    lv_obj_set_size(row, lv_pct(100), 28);
     lv_obj_set_style_radius(row, 8, 0);
     lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE);
     if (sep) {
@@ -69,7 +70,8 @@ void IrScreen::onCreate(lv_obj_t* parent) {
 
     makeAction(right, 0, ICON_RECORD,   cRed(),    tr(STR_CAPTURE), true);
     makeAction(right, 1, ICON_SIGNAL,   cGreen(),  tr(STR_REPLAY),  true);
-    makeAction(right, 2, ICON_INFRARED, cOrange(), tr(STR_TV_OFF),  false);
+    makeAction(right, 2, ICON_INFRARED, cOrange(), tr(STR_TV_OFF),  true);
+    makeAction(right, 3, ICON_APPS,     cBlue(),   "Universal",     false);
 
     refreshInfo();
 }
@@ -114,6 +116,9 @@ void IrScreen::activateSelected() {
         case 2:     // выключить ТВ
             ir.sendTvOff();
             Notify::toast(tr(STR_SENT), Notify::Success);
+            break;
+        case 3:     // универсальный пульт
+            UIManager::instance().pushScreen("IrRemote");
             break;
         default: break;
     }

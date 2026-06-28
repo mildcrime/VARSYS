@@ -131,4 +131,57 @@ void InfraRed::sendNEC(uint8_t addr, uint8_t cmd) {
     sendRaw(p, 38000);
 }
 
+void InfraRed::sendNECext(uint16_t addr, uint8_t cmd) {
+    // NEC extended: 16-бит адрес (LSB первым) + cmd + ~cmd.
+    std::vector<uint16_t> p;
+    p.push_back(9000);
+    p.push_back(4500);
+    uint8_t bytes[4] = { (uint8_t)(addr & 0xFF), (uint8_t)(addr >> 8),
+                         cmd, (uint8_t)~cmd };
+    for (uint8_t b : bytes)
+        for (int i = 0; i < 8; ++i) {
+            p.push_back(560);
+            p.push_back((b & (1 << i)) ? 1690 : 560);
+        }
+    p.push_back(560);
+    sendRaw(p, 38000);
+}
+
+void InfraRed::sendSamsung(uint8_t addr, uint8_t cmd) {
+    // Samsung: лидер 4500/4500, затем addr, addr, cmd, ~cmd (LSB первым).
+    std::vector<uint16_t> p;
+    p.push_back(4500);
+    p.push_back(4500);
+    uint8_t bytes[4] = { addr, addr, cmd, (uint8_t)~cmd };
+    for (uint8_t b : bytes)
+        for (int i = 0; i < 8; ++i) {
+            p.push_back(560);
+            p.push_back((b & (1 << i)) ? 1690 : 560);
+        }
+    p.push_back(560);
+    sendRaw(p, 38000);
+}
+
+void InfraRed::sendSony(uint8_t cmd, uint16_t addr, uint8_t bits) {
+    // SIRC: лидер 2400/600, бит '1' = 1200 mark, '0' = 600 mark, разделитель
+    // 600 space. Передаём cmd (7 бит) + addr (bits-7), LSB первым. Несущая
+    // 40 кГц. Протокол требует 3 повтора кадра.
+    const int addrBits = bits - 7;
+    for (int rep = 0; rep < 3; ++rep) {
+        std::vector<uint16_t> p;
+        p.push_back(2400);          // лидер mark
+        p.push_back(600);           // лидер space
+        for (int i = 0; i < 7; ++i) {
+            p.push_back((cmd & (1 << i)) ? 1200 : 600);
+            p.push_back(600);
+        }
+        for (int i = 0; i < addrBits; ++i) {
+            p.push_back((addr & (1 << i)) ? 1200 : 600);
+            p.push_back(600);
+        }
+        sendRaw(p, 40000);
+        delay(25);                  // период кадра SIRC ~45 мс
+    }
+}
+
 } // namespace hal

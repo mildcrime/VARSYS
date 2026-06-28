@@ -24,6 +24,12 @@ public:
     void   sendNEC(uint8_t addr, uint8_t cmd) { _ir.sendNEC(addr, cmd); }
     void   sendTvOff();                // заготовка «выключить ТВ» (power-коды)
 
+    // --- Универсальный пульт: одна функция -> sweep кодов топ-брендов ---
+    enum UniFn : uint8_t { UNI_POWER, UNI_VOLUP, UNI_VOLDN, UNI_MUTE,
+                           UNI_CHUP, UNI_CHDN, UNI_SOURCE, UNI_COUNT };
+    int  sendUniversal(UniFn fn);              // число отправленных кодов
+    static const char* uniName(UniFn fn);
+
 private:
     static IrModule* _self;
     hal::InfraRed _ir;
