@@ -14,24 +14,32 @@
     color: #f2f2f7; display: flex; align-items: center; justify-content: center;
     padding: 32px 16px;
   }
-  .card { width: 100%; max-width: 460px; text-align: center; }
+  .card { width: 100%; max-width: 470px; text-align: center; }
   .logo { font-size: 44px; font-weight: 600; letter-spacing: 2px; margin: 0 0 4px; }
   .logo .a { background: linear-gradient(90deg,#0a84ff,#30d6c0); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .sub { color: #8e8e93; font-size: 15px; margin: 0 0 28px; }
-  .panel { background: #1c1c1e; border: 0.5px solid #38383a; border-radius: 16px; padding: 22px; }
-  esp-web-install-button { --esp-tools-button-color:#fff; --esp-tools-button-text-color:#0a84ff; }
-  .btn { display:inline-block; }
+  .sub { color: #8e8e93; font-size: 15px; margin: 0 0 24px; }
+  .panel { background: #1c1c1e; border: 0.5px solid #38383a; border-radius: 16px; padding: 22px; margin-bottom: 14px; }
   button.primary {
     appearance: none; border: 0; border-radius: 12px; cursor: pointer;
     background: #0a84ff; color: #fff; font-size: 16px; font-weight: 600;
     padding: 14px 28px; font-family: inherit;
   }
+  button.ghost {
+    appearance: none; border: 0.5px solid #38383a; border-radius: 10px; cursor: pointer;
+    background: transparent; color: #64d2ff; font-size: 14px; font-weight: 500;
+    padding: 10px 16px; font-family: inherit;
+  }
   ol { text-align: left; color: #c7c7cc; font-size: 14px; line-height: 1.7; margin: 22px 4px 0; padding-left: 20px; }
-  .note { margin-top: 18px; font-size: 13px; color: #8e8e93; }
   .warn { margin-top: 14px; font-size: 12px; color: #ff9f0a; }
   .unsupported { display:none; color:#ff453a; font-size:14px; margin-top:14px; }
   a { color: #64d2ff; text-decoration: none; }
-  .row { display:flex; gap:16px; justify-content:center; margin-top:18px; font-size:13px; }
+  .row { display:flex; gap:16px; justify-content:center; margin-top:10px; font-size:13px; }
+  .sec-title { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+  #checkResult { font-size: 13px; line-height: 1.6; margin-top: 12px; color:#c7c7cc; min-height: 1em; }
+  #driverLinks { margin-top: 12px; font-size: 13px; line-height: 1.9; }
+  #driverLinks a { display:inline-block; }
+  .ok { color:#30d158; } .bad { color:#ff453a; } .muted { color:#8e8e93; }
+  .note { margin-top: 16px; font-size: 12px; color: #8e8e93; }
 </style>
 </head>
 <body>
@@ -40,26 +48,35 @@
     <p class="sub">Web Flasher · T‑Embed CC1101 (ESP32‑S3)</p>
 
     <div class="panel">
-      <div class="btn">
-        <esp-web-install-button manifest="manifest.json">
-          <button slot="activate" class="primary">⚡ Install / Прошить</button>
-          <span slot="unsupported" class="unsupported">
-            Браузер не поддерживает Web Serial. Откройте в Chrome или Edge на
-            компьютере. / Use Chrome or Edge on desktop.
-          </span>
-          <span slot="not-allowed" class="unsupported">
-            Доступ к порту запрещён. / Serial access not allowed.
-          </span>
-        </esp-web-install-button>
-      </div>
+      <esp-web-install-button manifest="manifest.json">
+        <button slot="activate" class="primary">⚡ Install / Прошить</button>
+        <span slot="unsupported" class="unsupported">
+          Браузер не поддерживает Web Serial. Откройте в Chrome или Edge на
+          компьютере. · Use desktop Chrome or Edge.
+        </span>
+        <span slot="not-allowed" class="unsupported">
+          Доступ к порту запрещён. · Serial access not allowed.
+        </span>
+      </esp-web-install-button>
 
       <ol>
-        <li>Подключите устройство по USB. / Connect the device via USB.</li>
-        <li>Нажмите «Install», выберите COM/serial‑порт устройства.<br>Click “Install” and pick the device’s serial port.</li>
-        <li>Дождитесь окончания прошивки. / Wait for the flash to finish.</li>
+        <li>Подключите устройство по USB. · Connect the device via USB.</li>
+        <li>Нажмите «Install», выберите порт устройства. · Click “Install”, pick the port.</li>
+        <li>Дождитесь окончания прошивки. · Wait for the flash to finish.</li>
       </ol>
+      <p class="warn">⚠️ Только Chrome / Edge на ПК · Desktop Chrome / Edge only</p>
+    </div>
 
-      <p class="warn">⚠️ Только Chrome / Edge на ПК · Only desktop Chrome / Edge</p>
+    <div class="panel">
+      <p class="sec-title">Не видит устройство? · Device not detected?</p>
+      <button class="ghost" id="checkBtn">🔍 Проверить устройство · Check device</button>
+      <div id="checkResult"></div>
+      <div id="driverLinks"></div>
+      <p class="muted" style="font-size:12px;margin-top:14px;">
+        Браузер не может установить драйвер сам — скачайте по ссылке для вашей ОС,
+        установите и переподключите устройство. · The browser can’t install drivers;
+        download for your OS, install, then re‑plug the device.
+      </p>
     </div>
 
     <div class="row">
@@ -71,5 +88,75 @@
   </div>
 
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <script>
+  (function () {
+    // OS detection
+    var ua = (navigator.userAgentData && navigator.userAgentData.platform) ||
+             navigator.platform || navigator.userAgent || "";
+    var os = /win/i.test(ua) ? "win" : /mac/i.test(ua) ? "mac"
+           : /linux|x11|cros/i.test(ua) ? "linux" : "other";
+    var osName = { win:"Windows", mac:"macOS", linux:"Linux", other:"OS" }[os];
+
+    // USB‑serial bridge chips by USB Vendor ID
+    var VID = {
+      0x303A: { name: "Espressif native USB (ESP32‑S3)", drv: null },
+      0x10C4: { name: "Silicon Labs CP210x", drv: "cp210x" },
+      0x1A86: { name: "WCH CH340 / CH9102", drv: "wch" },
+      0x0403: { name: "FTDI", drv: "ftdi" }
+    };
+    var DRV = {
+      cp210x: { title: "Silicon Labs CP210x VCP",
+                url: "https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" },
+      wch:    { title: "WCH CH340/CH9102",
+                win: "https://www.wch-ic.com/downloads/CH343SER_EXE.html",
+                mac: "https://www.wch-ic.com/downloads/CH34XSER_MAC_ZIP.html",
+                linux: "https://github.com/WCHSoftGroup/ch341ser_linux" },
+      ftdi:   { title: "FTDI VCP",
+                url: "https://ftdichip.com/drivers/vcp-drivers/" }
+    };
+    function drvUrl(k) { var d = DRV[k]; return d.url || d[os] || d.win; }
+    function link(href, text) { return '<a href="' + href + '" target="_blank" rel="noopener">' + text + ' ↗</a>'; }
+
+    var res = document.getElementById("checkResult");
+    var links = document.getElementById("driverLinks");
+
+    // Always offer the common drivers for the detected OS.
+    links.innerHTML =
+      '<div class="muted">Драйверы для ' + osName + ' · Drivers for ' + osName + ':</div>' +
+      link(drvUrl("cp210x"), "CP210x") + " &nbsp; " +
+      link(drvUrl("wch"), "CH340 / CH9102") + " &nbsp; " +
+      link(drvUrl("ftdi"), "FTDI");
+
+    document.getElementById("checkBtn").onclick = async function () {
+      if (!("serial" in navigator)) {
+        res.innerHTML = '<span class="bad">Web Serial недоступен — нужен Chrome/Edge на ПК.</span>';
+        return;
+      }
+      res.textContent = "Выберите порт устройства в окне браузера…";
+      try {
+        var port = await navigator.serial.requestPort();
+        var info = port.getInfo();
+        var vid = info.usbVendorId;
+        var chip = VID[vid];
+        if (chip && chip.drv === null) {
+          res.innerHTML = '<span class="ok">✓ ' + chip.name +
+            ' — драйвер не нужен. Можно нажимать Install.</span>';
+        } else if (chip) {
+          res.innerHTML = '<span class="ok">✓ Порт найден:</span> ' + chip.name +
+            '. Если прошивка не идёт — установите драйвер: ' +
+            link(drvUrl(chip.drv), DRV[chip.drv].title);
+        } else if (vid != null) {
+          res.innerHTML = 'Порт найден (USB VID 0x' +
+            vid.toString(16).toUpperCase() + '). Драйвер, похоже, уже есть — нажимайте Install.';
+        } else {
+          res.innerHTML = 'Порт выбран. Нажимайте Install.';
+        }
+      } catch (e) {
+        res.innerHTML = '<span class="bad">Порт не выбран / устройство не найдено.</span> ' +
+          'Если оно подключено, но не появляется в списке — установите драйвер ниже и переподключите кабель.';
+      }
+    };
+  })();
+  </script>
 </body>
 </html>
