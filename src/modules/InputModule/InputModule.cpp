@@ -7,36 +7,36 @@
 static const char* TAG = "Input";
 
 // ----------------------------------------------------------------------------
-//  Полношаговый квадратурный декодер (state machine, Ben Buxton).
-//  Даёт ровно одно событие на детент, устойчив к дребезгу контактов.
+//  Полушаговый квадратурный декодер (state machine, Ben Buxton, half-step).
+//  Эмитит на каждом полуцикле — одно событие на детент для энкодеров с
+//  детентами и на 00, и на 11 (как на T-Embed: иначе CW срабатывал через
+//  раз, а CCW не доходил до эмита). Устойчив к дребезгу.
+//  Колонки таблицы индексируются кодом пинов (A<<1)|B = 00,01,10,11.
 // ----------------------------------------------------------------------------
-#define R_START     0x0
-#define R_CW_FINAL  0x1
-#define R_CW_BEGIN  0x2
-#define R_CW_NEXT   0x3
-#define R_CCW_BEGIN 0x4
-#define R_CCW_FINAL 0x5
-#define R_CCW_NEXT  0x6
+#define R_START      0x0
+#define R_CCW_BEGIN  0x1
+#define R_CW_BEGIN   0x2
+#define R_START_M    0x3
+#define R_CW_BEGIN_M 0x4
+#define R_CCW_BEGIN_M 0x5
 
 #define DIR_NONE    0x0
 #define DIR_CW      0x10
 #define DIR_CCW     0x20
 
-static const uint8_t kTable[7][4] = {
-    // R_START
-    {R_START,    R_CW_BEGIN,  R_CCW_BEGIN, R_START},
-    // R_CW_FINAL
-    {R_CW_NEXT,  R_START,     R_CW_FINAL,  R_START | DIR_CW},
-    // R_CW_BEGIN
-    {R_CW_NEXT,  R_CW_BEGIN,  R_START,     R_START},
-    // R_CW_NEXT
-    {R_CW_NEXT,  R_CW_BEGIN,  R_CW_FINAL,  R_START},
+static const uint8_t kTable[6][4] = {
+    // R_START (00)
+    {R_START_M,           R_CW_BEGIN,    R_CCW_BEGIN,  R_START},
     // R_CCW_BEGIN
-    {R_CCW_NEXT, R_START,     R_CCW_BEGIN, R_START},
-    // R_CCW_FINAL
-    {R_CCW_NEXT, R_CCW_FINAL, R_START,     R_START},
-    // R_CCW_NEXT
-    {R_CCW_NEXT, R_CCW_FINAL, R_CCW_BEGIN, R_START | DIR_CCW},
+    {R_START_M | DIR_CCW, R_START,       R_CCW_BEGIN,  R_START},
+    // R_CW_BEGIN
+    {R_START_M | DIR_CW,  R_CW_BEGIN,    R_START,      R_START},
+    // R_START_M (11)
+    {R_START_M,           R_CCW_BEGIN_M, R_CW_BEGIN_M, R_START},
+    // R_CW_BEGIN_M
+    {R_START_M,           R_START_M,     R_CW_BEGIN_M, R_START | DIR_CW},
+    // R_CCW_BEGIN_M
+    {R_START_M,           R_CCW_BEGIN_M, R_START_M,    R_START | DIR_CCW},
 };
 
 bool InputModule::init() {

@@ -97,9 +97,8 @@ void PowerModule::update(uint32_t now) {
     // Таймаут гашения настраивается пользователем (0 = никогда).
     const uint32_t sleepMs = (uint32_t)Settings::instance().screenTimeoutSec() * 1000;
     if (sleepMs == 0) return;                 // энергосбережение по экрану отключено
-    // Затемнение — за треть таймаута до полного гашения (но не позже 20 с).
+    // Затемнение — на 2/3 пути к полному гашению (для 60 с это 40 с).
     uint32_t dimMs = sleepMs * 2 / 3;
-    if (dimMs > VARSYS_DIM_MS) dimMs = VARSYS_DIM_MS;
 
     const uint32_t idle = now - _lastActivity;
 
