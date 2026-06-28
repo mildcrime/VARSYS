@@ -6,120 +6,117 @@
 
 using namespace ui;
 
+void HomeScreen::addTile(const char* sym, lv_color_t color,
+                         const char* label, const char* target) {
+    if (_count >= kMax) return;
+    lv_obj_t* ic = lv_obj_create(_row);
+    lv_obj_remove_style_all(ic);
+    lv_obj_set_size(ic, 72, 72);
+    lv_obj_set_style_radius(ic, 20, 0);
+    lv_obj_set_style_bg_color(ic, color, 0);
+    lv_obj_set_style_bg_opa(ic, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(ic, cBlue(), 0);
+    lv_obj_clear_flag(ic, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_transform_pivot_x(ic, 36, 0);   // зум вокруг центра
+    lv_obj_set_style_transform_pivot_y(ic, 36, 0);
+
+    lv_obj_t* g = lv_label_create(ic);
+    lv_label_set_text(g, sym);
+    lv_obj_set_style_text_color(g, lv_color_white(), 0);
+    lv_obj_set_style_text_font(g, &varsys_22, 0);
+    lv_obj_center(g);
+
+    _tiles[_count++] = { ic, target, label };
+}
+
 void HomeScreen::onCreate(lv_obj_t* parent) {
     _root = parent;
     styleScreen(_root);
 
-    statusBar(_root, "VARSYS");
-
-    // Горизонтально прокручиваемый ряд плиток.
     _row = lv_obj_create(_root);
     lv_obj_remove_style_all(_row);
     lv_obj_set_size(_row, lv_pct(100), 132);
-    lv_obj_align(_row, LV_ALIGN_BOTTOM_MID, 0, -8);
+    lv_obj_align(_row, LV_ALIGN_CENTER, 0, -6);
     lv_obj_set_flex_flow(_row, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(_row, LV_FLEX_ALIGN_START,
                           LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_column(_row, 4, 0);
-    lv_obj_set_style_pad_hor(_row, 12, 0);
+    lv_obj_set_style_pad_column(_row, 24, 0);
+    lv_obj_set_style_pad_left(_row, 124, 0);          // центрирование крайних
+    lv_obj_set_style_pad_right(_row, 124, 0);
     lv_obj_set_scroll_dir(_row, LV_DIR_HOR);
     lv_obj_set_scroll_snap_x(_row, LV_SCROLL_SNAP_CENTER);
     lv_obj_set_scrollbar_mode(_row, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_add_event_cb(_row, scrollCb, LV_EVENT_SCROLL, this);
 
-    // Пункты меню: иконка, цвет плитки, подпись, целевой экран.
-    int i = 0;
-    buildTile(_row, i++, ICON_ANTENNA,   cOrange(), "Sub-GHz",   "SubGhz");
-    buildTile(_row, i++, ICON_INFRARED,  cRed(),    "Infrared",  "Ir");
-    buildTile(_row, i++, ICON_NFC,       cBlue(),   "NFC",       "Nfc");
-    buildTile(_row, i++, ICON_WIFI,      cBlue(),   "WiFi",      "Wifi");
-    buildTile(_row, i++, ICON_SIGNAL,    cGreen(),  "GPS",       "Gps");
-    buildTile(_row, i++, ICON_ANTENNA,   cBlue(),   "NRF24",     "Nrf");
-    buildTile(_row, i++, ICON_NFC,       cOrange(), "iButton",   "IButton");
-    buildTile(_row, i++, ICON_SIGNAL,    cRed(),    "FM",        "Fm");
-    buildTile(_row, i++, ICON_BLUETOOTH, cBlue(),   "Bluetooth", "Ble");
-    buildTile(_row, i++, ICON_RECORD,    cOrange(), "BadUSB",    "Badusb");
-    buildTile(_row, i++, ICON_LANGUAGE,  cBlue(),   "WebUI",     "WebUi");
-    buildTile(_row, i++, ICON_FOLDER,    cGreen(),  tr(STR_FILES),    nullptr);
-    buildTile(_row, i++, ICON_SETTINGS,  cGray(),   tr(STR_SETTINGS), "Settings");
+    _count = 0;
+    addTile(ICON_ANTENNA,   lv_color_hex(0xFF9F0A), "Sub-GHz",        "SubGhz");
+    addTile(ICON_INFRARED,  lv_color_hex(0xFF453A), "Infrared",       "Ir");
+    addTile(ICON_NFC,       lv_color_hex(0x0A84FF), "NFC",            "Nfc");
+    addTile(ICON_WIFI,      lv_color_hex(0x30B0C7), "WiFi",           "Wifi");
+    addTile(ICON_BLUETOOTH, lv_color_hex(0x0A84FF), "Bluetooth",      "Ble");
+    addTile(ICON_SIGNAL,    lv_color_hex(0x30D158), "GPS",            "Gps");
+    addTile(ICON_ANTENNA,   lv_color_hex(0x5E5CE6), "NRF24",          "Nrf");
+    addTile(ICON_NFC,       lv_color_hex(0xFFD60A), "iButton",        "IButton");
+    addTile(ICON_SIGNAL,    lv_color_hex(0xFF375F), "FM",             "Fm");
+    addTile(ICON_RECORD,    lv_color_hex(0xBF5AF2), "BadUSB",         "Badusb");
+    addTile(ICON_LANGUAGE,  lv_color_hex(0x64D2FF), "WebUI",          "WebUi");
+    addTile(ICON_FOLDER,    lv_color_hex(0x30D158), tr(STR_FILES),    nullptr);
+    addTile(ICON_SETTINGS,  lv_color_hex(0x8E8E93), tr(STR_SETTINGS), "Settings");
+    if (Settings::instance().expert())
+        addTile(ICON_EXPERT, lv_color_hex(0xFF453A), tr(STR_EXPERT),  "Expert");
 
-    // Раздел «Эксперт» виден только при включённом режиме эксперта.
-    if (Settings::instance().expert()) {
-        buildTile(_row, i++, ICON_EXPERT, cRed(), tr(STR_EXPERT), "Expert");
-    }
+    _name = lv_label_create(_root);
+    lv_obj_set_style_text_color(_name, cText(), 0);
+    lv_obj_set_style_text_font(_name, &varsys_16, 0);
+    lv_obj_align(_name, LV_ALIGN_BOTTOM_MID, 0, -2);
 }
 
-void HomeScreen::buildTile(lv_obj_t* row, int idx, const char* sym,
-                           lv_color_t color, const char* label,
-                           const char* target) {
-    if (idx >= kMaxTiles) return;
-
-    // Обёртка-колонка (плитка + подпись).
-    lv_obj_t* wrap = lv_obj_create(row);
-    lv_obj_remove_style_all(wrap);
-    lv_obj_set_size(wrap, 70, 92);
-    lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(wrap, LV_FLEX_ALIGN_CENTER,
-                          LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(wrap, 6, 0);
-    lv_obj_set_style_radius(wrap, 16, 0);
-    lv_obj_clear_flag(wrap, LV_OBJ_FLAG_SCROLLABLE);
-
-    // Цветная плитка-иконка.
-    lv_obj_t* sq = lv_obj_create(wrap);
-    lv_obj_remove_style_all(sq);
-    lv_obj_set_size(sq, 50, 50);
-    lv_obj_set_style_bg_color(sq, color, 0);
-    lv_obj_set_style_bg_opa(sq, LV_OPA_COVER, 0);
-    lv_obj_set_style_radius(sq, 13, 0);
-    lv_obj_clear_flag(sq, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_t* ic = lv_label_create(sq);
-    lv_label_set_text(ic, sym);
-    lv_obj_set_style_text_color(ic, lv_color_white(), 0);
-    lv_obj_set_style_text_font(ic, &varsys_22, 0);
-    lv_obj_center(ic);
-
-    // Подпись.
-    lv_obj_t* lb = lv_label_create(wrap);
-    lv_label_set_text(lb, label);
-    lv_obj_set_style_text_color(lb, cText(), 0);
-    lv_obj_set_style_text_font(lb, &varsys_12, 0);
-
-    _tiles[idx] = { wrap, sq, target };
-    _count = idx + 1;
+void HomeScreen::scrollCb(lv_event_t* e) {
+    static_cast<HomeScreen*>(lv_event_get_user_data(e))->applyFocus();
 }
 
-void HomeScreen::highlight(int idx, bool on) {
-    if (idx < 0 || idx >= _count) return;
-    Tile& t = _tiles[idx];
-    if (on) {
-        lv_obj_set_style_bg_color(t.wrap, cTint(), 0);
-        lv_obj_set_style_bg_opa(t.wrap, LV_OPA_COVER, 0);
-        lv_obj_set_style_border_width(t.square, 3, 0);
-        lv_obj_set_style_border_color(t.square, cBlue(), 0);
-    } else {
-        lv_obj_set_style_bg_opa(t.wrap, LV_OPA_TRANSP, 0);
-        lv_obj_set_style_border_width(t.square, 0, 0);
+void HomeScreen::applyFocus() {
+    if (_count == 0) return;
+    lv_area_t rc;
+    lv_obj_get_coords(_row, &rc);
+    int viewC = (rc.x1 + rc.x2) / 2;
+
+    int best = 0, bestD = 1 << 30;
+    for (int i = 0; i < _count; ++i) {
+        lv_area_t tc;
+        lv_obj_get_coords(_tiles[i].icon, &tc);
+        int c = (tc.x1 + tc.x2) / 2;
+        int d = c > viewC ? c - viewC : viewC - c;
+        int nd = d > 150 ? 150 : d;
+        int f = 150 - nd;                              // 0..150 (150 в центре)
+        lv_obj_set_style_transform_zoom(_tiles[i].icon, 256 + f * 110 / 150, 0);
+        lv_obj_set_style_opa(_tiles[i].icon, (lv_opa_t)(110 + f * 145 / 150), 0);
+        if (d < bestD) { bestD = d; best = i; }
     }
+    for (int i = 0; i < _count; ++i)
+        lv_obj_set_style_border_width(_tiles[i].icon, i == best ? 3 : 0, 0);
+
+    _selected = best;
+    if (_name) lv_label_set_text(_name, _tiles[best].label);
 }
 
 void HomeScreen::onShow() {
-    highlight(_selected, true);
+    lv_obj_update_layout(_root);
+    if (_selected >= _count) _selected = 0;
+    lv_obj_scroll_to_view(_tiles[_selected].icon, LV_ANIM_OFF);
+    applyFocus();
 }
 
 void HomeScreen::moveSelection(int delta) {
-    if (_count == 0) return;
-    highlight(_selected, false);
-    _selected = (_selected + delta + _count) % _count;
-    highlight(_selected, true);
-    lv_obj_scroll_to_view(_tiles[_selected].wrap, LV_ANIM_ON);
+    int t = _selected + delta;
+    if (t < 0) t = 0;
+    if (t >= _count) t = _count - 1;
+    lv_obj_scroll_to_view(_tiles[t].icon, LV_ANIM_ON);
 }
 
 void HomeScreen::openSelected() {
     const char* target = _tiles[_selected].target;
-    if (target) {
-        UIManager::instance().pushScreen(target, LV_SCR_LOAD_ANIM_MOVE_LEFT);
-    }
+    if (target) UIManager::instance().pushScreen(target, LV_SCR_LOAD_ANIM_MOVE_LEFT);
 }
 
 void HomeScreen::onEvent(const Event& e) {

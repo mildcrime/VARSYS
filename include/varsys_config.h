@@ -20,7 +20,7 @@
 // --- UI ---
 #define VARSYS_UI_ROTATION      3       // landscape 320x170 (как в Bruce на этой плате)
 #define VARSYS_UI_BRIGHTNESS    200     // Стартовая яркость подсветки (0..255)
-#define VARSYS_BOOT_SPLASH_MS   1200    // Длительность загрузочного экрана
+#define VARSYS_BOOT_SPLASH_MS   2000    // Длительность анимированной заставки
 
 // --- Питание / энергосбережение ---
 #define VARSYS_BATTERY_POLL_MS  5000    // Период опроса топливомера BQ27220

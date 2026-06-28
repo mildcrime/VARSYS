@@ -1,8 +1,9 @@
 // ============================================================================
-//  HomeScreen.h — Главный экран VARSYS (спрингборд iOS, ландшафт 320×170)
+//  HomeScreen.h — Домашний экран: focus-карусель (LVGL)
 //
-//  Ряд плиток-иконок с горизонтальной прокруткой. Навигация энкодером:
-//  поворот — перемещение выбора, нажатие — открытие подсистемы.
+//  Горизонтальная карусель крупных иконок: выбранная в центре увеличена и
+//  подсвечена, соседние уменьшены и приглушены. Прокрутка энкодером плавная
+//  (scroll-snap по центру + пересчёт масштаба по близости к центру).
 // ============================================================================
 #pragma once
 #include "ui/Screen.h"
@@ -15,22 +16,23 @@ public:
     void onEvent(const Event& e) override;
 
 private:
-    static constexpr int kMaxTiles = 16;
+    static constexpr int kMax = 16;
 
     struct Tile {
-        lv_obj_t*   wrap   = nullptr;   // обёртка (иконка + подпись)
-        lv_obj_t*   square = nullptr;   // цветная плитка
-        const char* target = nullptr;   // имя экрана для открытия (или nullptr)
+        lv_obj_t*   icon   = nullptr;
+        const char* target = nullptr;
+        const char* label  = nullptr;
     };
 
-    void buildTile(lv_obj_t* row, int idx, const char* sym,
-                   lv_color_t color, const char* label, const char* target);
+    void addTile(const char* sym, lv_color_t color, const char* label, const char* target);
+    void applyFocus();                 // пересчёт масштаба/прозрачности/выбора
     void moveSelection(int delta);
-    void highlight(int idx, bool on);
     void openSelected();
+    static void scrollCb(lv_event_t* e);
 
-    lv_obj_t* _row = nullptr;
-    Tile      _tiles[kMaxTiles];
+    lv_obj_t* _row  = nullptr;
+    lv_obj_t* _name = nullptr;
+    Tile      _tiles[kMax];
     int       _count    = 0;
     int       _selected = 0;
 };

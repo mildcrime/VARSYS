@@ -5,6 +5,7 @@
 #include "core/Settings.h"
 #include "hal/board_pins.h"
 #include "ui/UIManager.h"
+#include "ui/Splash.h"
 #include "varsys_config.h"
 #include <Wire.h>
 
@@ -78,9 +79,12 @@ void PowerModule::noteActivity() {
 }
 
 void PowerModule::wake() {
+    bool wasOff = _screenOff;
     UIManager::instance().display().setBrightness(Settings::instance().brightness());
     _dimmed = false;
     _screenOff = false;
+    // Выход из полного сна — короткая заставка (как при включении).
+    if (wasOff) Splash::play(900);
 }
 
 void PowerModule::update(uint32_t now) {

@@ -8,7 +8,7 @@
 #include <string.h>
 
 // Экраны
-#include "ui/screens/BootScreen.h"
+#include "ui/Splash.h"
 #include "ui/screens/HomeScreen.h"
 #include "ui/screens/SubGhzScreen.h"
 #include "ui/screens/SettingsScreen.h"
@@ -92,6 +92,9 @@ bool UIManager::init() {
     _overlay.create();
     _overlay.setVisible(false);
 
+    // Заставка-оверлей (всегда поверх всего, в т.ч. статус-бара).
+    Splash::create();
+
     buildScreens();
 
     LOGI(TAG, "LVGL initialized (%dx%d), screens: %u",
@@ -100,7 +103,6 @@ bool UIManager::init() {
 }
 
 void UIManager::buildScreens() {
-    addScreen(new BootScreen());
     addScreen(new HomeScreen());
     addScreen(new SubGhzScreen());
     addScreen(new SettingsScreen());
@@ -176,8 +178,9 @@ bool UIManager::popScreen(lv_scr_load_anim_t anim) {
 }
 
 void UIManager::start() {
-    // Стартуем с загрузочного экрана.
-    setScreen("Boot");
+    // Дом — стартовый экран; заставка-оверлей играет поверх него.
+    setScreen("Home");
+    Splash::play(2000);
 
     // Маршрутизация событий ввода к активному экрану.
     // Модуль ввода (этап 2) будет публиковать эти события в EventBus.
