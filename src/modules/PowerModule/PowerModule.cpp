@@ -89,7 +89,6 @@ void PowerModule::wake() {
     UIManager::instance().display().setBrightness(Settings::instance().brightness());
     _dimmed = false;
     _screenOff = false;
-    // Выход из полного сна — короткая заставка (как при включении).
     if (wasOff) Splash::play(900);
 }
 
@@ -100,7 +99,11 @@ void PowerModule::update(uint32_t now) {
     // Затемнение — на 2/3 пути к полному гашению (для 60 с это 40 с).
     uint32_t dimMs = sleepMs * 2 / 3;
 
-    const uint32_t idle = now - _lastActivity;
+    // ВАЖНО: noteActivity() ставит _lastActivity = millis(), который может быть
+    // НА 1мс БОЛЬШЕ, чем now (взят в начале тика Core::loop до обработки ввода).
+    // Тогда now - _lastActivity уходит в underflow (~4.3 млрд) -> ложный
+    // SCREENOFF на каждом вводе. Защищаемся: активность «в будущем» = idle 0.
+    const uint32_t idle = (now >= _lastActivity) ? (now - _lastActivity) : 0;
 
     if (!_screenOff && idle > sleepMs) {
         UIManager::instance().display().setBrightness(0);
@@ -109,7 +112,7 @@ void PowerModule::update(uint32_t now) {
         // рисуется, активной работы нет). Возврат в wake() по любому вводу.
         setCpuFrequencyMhz(VARSYS_CPU_MHZ_IDLE);
         _lowPower = true;
-        LOGD(TAG, "Screen off + CPU %dMHz (idle)", VARSYS_CPU_MHZ_IDLE);
+        LOGD(TAG, "Screen off (idle)");
     } else if (!_dimmed && idle > dimMs) {
         UIManager::instance().display().setBrightness(VARSYS_DIM_BRIGHTNESS);
         _dimmed = true;
