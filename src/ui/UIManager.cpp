@@ -38,8 +38,9 @@ static const char* TAG = "UI";
 
 UIManager* UIManager::_self = nullptr;
 
-// Размер буфера отрисовки: 1/10 экрана на двойную буферизацию.
-static constexpr uint32_t kBufLines = BOARD_TFT_HEIGHT / 10;
+// Размер буфера отрисовки: крупнее (меньше полос flush -> меньше тиринга
+// при прокрутке), но без чрезмерного DMA-аллока (оставляем RAM радио).
+static constexpr uint32_t kBufLines = BOARD_TFT_HEIGHT / 6;
 
 void UIManager::flushCb(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* px) {
     auto* self = static_cast<UIManager*>(drv->user_data);

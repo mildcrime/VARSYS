@@ -124,7 +124,9 @@ void HomeScreen::moveSelection(int delta) {
     int t = _selected + delta;
     if (t < 0) t = 0;
     if (t >= _count) t = _count - 1;
-    lv_obj_scroll_to_view(_tiles[t].icon, LV_ANIM_ON);
+    // Мгновенно (без анимации): меню по щелчкам энкодера, плавная анимация
+    // на маленьком буфере давала тиринг (полосы дисплея рассинхронены).
+    lv_obj_scroll_to_view(_tiles[t].icon, LV_ANIM_OFF);
 }
 
 void HomeScreen::openSelected() {
