@@ -79,17 +79,23 @@ bool StorageModule::saveSignal(const SignalRecord& rec) {
     File f = _fs->open(path, FILE_WRITE);
     if (!f) { LOGE(TAG, "open for write failed: %s", path.c_str()); return false; }
 
-    f.println("Filetype: VARSYS Signal");
+    // Формат, совместимый с Flipper Zero (RAW .sub): файлы открываются и на
+    // Flipper, и в нашей библиотеке. RAW_Data дробится на строки (≤512 значений).
+    f.println("Filetype: Flipper SubGhz RAW File");
+    f.println("Version: 1");
     f.printf("Frequency: %lu\n", (unsigned long)rec.freqKhz * 1000UL);
-    f.printf("Preset: %s\n", rec.preset.c_str());
-    f.printf("Start: %c\n", rec.startHigh ? 'H' : 'L');
-    f.print("RAW_Data:");
+    f.println("Preset: FuriHalSubGhzPresetOok650Async");
+    f.println("Protocol: RAW");
+
     bool high = rec.startHigh;
-    for (uint16_t d : rec.pulses) {
-        f.printf(" %d", high ? (int)d : -(int)d);
+    int  col  = 0;
+    for (size_t i = 0; i < rec.pulses.size(); ++i) {
+        if (col == 0) f.print("RAW_Data:");
+        f.printf(" %d", high ? (int)rec.pulses[i] : -(int)rec.pulses[i]);
         high = !high;
+        if (++col >= 512) { f.println(); col = 0; }
     }
-    f.println();
+    if (col > 0) f.println();
     f.close();
     LOGI(TAG, "saved %s (%u pulses)", path.c_str(), (unsigned)rec.pulses.size());
     return true;
@@ -106,6 +112,7 @@ bool StorageModule::loadSignal(const String& name, SignalRecord& out) {
 
     out = SignalRecord{};
     out.name = name;
+    bool firstRaw = true;
     while (f.available()) {
         String line = f.readStringUntil('\n');
         if (line.startsWith("Frequency:")) {
@@ -115,6 +122,7 @@ bool StorageModule::loadSignal(const String& name, SignalRecord& out) {
         } else if (line.startsWith("Start:")) {
             out.startHigh = line.indexOf('H') >= 0;
         } else if (line.startsWith("RAW_Data:")) {
+            // Несколько строк RAW_Data (как у Flipper) накапливаются подряд.
             int i = 9;
             while (i < (int)line.length()) {
                 while (i < (int)line.length() && line[i] == ' ') i++;
@@ -122,6 +130,8 @@ bool StorageModule::loadSignal(const String& name, SignalRecord& out) {
                 while (i < (int)line.length() && line[i] != ' ') i++;
                 if (i > start) {
                     int v = line.substring(start, i).toInt();
+                    // Знак ПЕРВОГО значения задаёт стартовый уровень.
+                    if (firstRaw) { out.startHigh = (v >= 0); firstRaw = false; }
                     out.pulses.push_back((uint16_t)abs(v));
                 }
             }

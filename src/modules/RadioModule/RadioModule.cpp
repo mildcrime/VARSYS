@@ -105,8 +105,11 @@ String RadioModule::decodeLast() {
     RfDecoded d = rfDecode(_lastCapture);
     if (!d.ok) return String("RAW ") + (int)_lastCapture.size();
     char buf[48];
-    snprintf(buf, sizeof(buf), "%s %dbit\nkey 0x%llX",
-             d.proto, d.bits, (unsigned long long)d.key);
+    if (d.bits == 0)   // rolling-код: ключ меняется, показываем только семейство
+        snprintf(buf, sizeof(buf), "%s", d.proto);
+    else
+        snprintf(buf, sizeof(buf), "%s %dbit\nkey 0x%llX",
+                 d.proto, d.bits, (unsigned long long)d.key);
     return String(buf);
 }
 

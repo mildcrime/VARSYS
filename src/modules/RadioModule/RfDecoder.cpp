@@ -32,7 +32,21 @@ RfDecoded rfDecode(const std::vector<uint16_t>& p) {
         val = (val << 1) | bit;
         bits++;
     }
-    if (bits < 8) return r;
+    if (bits < 8) {
+        // Фикс-PWM не распознан — пробуем rolling-code (KeeLoq/HCS и аналоги)
+        // по характерной длинной однородной преамбуле из равных коротких
+        // импульсов, заканчивающейся длинной паузой. Ключ не извлекаем
+        // (rolling-код меняется), но идентифицируем семейство.
+        int lead = 0;
+        for (int i = 0; i < n; ++i) {
+            if (p[i] > (uint32_t)te * 4) break;      // длинный gap = конец преамбулы
+            if (nearv(p[i], te)) lead++; else break;
+        }
+        if (lead >= 20 && te >= 200 && te <= 800) {
+            r.ok = true; r.proto = "KeeLoq/rolling"; r.bits = 0; r.key = 0;
+        }
+        return r;
+    }
 
     // 4) Классификация по числу бит и te.
     r.ok = true; r.bits = bits; r.key = val;
