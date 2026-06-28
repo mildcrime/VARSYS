@@ -56,6 +56,7 @@ void HomeScreen::onCreate(lv_obj_t* parent) {
     addTile(ICON_BLUETOOTH, lv_color_hex(0x0A84FF), "Bluetooth",      "Ble");
     addTile(ICON_SIGNAL,    lv_color_hex(0x30D158), "GPS",            "Gps");
     addTile(ICON_ANTENNA,   lv_color_hex(0x5E5CE6), "NRF24",          "Nrf");
+    addTile(ICON_RECORD,    lv_color_hex(0xFF375F), "Mousejack",      "Mousejack");
     addTile(ICON_NFC,       lv_color_hex(0xFFD60A), "iButton",        "IButton");
     addTile(ICON_SIGNAL,    lv_color_hex(0xFF375F), "FM",             "Fm");
     addTile(ICON_RECORD,    lv_color_hex(0xBF5AF2), "BadUSB",         "Badusb");

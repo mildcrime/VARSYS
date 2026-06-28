@@ -22,8 +22,29 @@ public:
     void scanPass();                         // один проход по каналам
     const uint8_t* activity() const { return _activity; }
 
+    // --- Mousejack (HID-инъекция в беспроводные мыши/клавиатуры) ---
+    //  Только для авторизованного тестирования своих/разрешённых устройств.
+    struct MjDevice { uint8_t addr[5]; uint8_t channel; };
+    static constexpr int kMaxDevices = 12;
+
+    // Promiscuous-поиск адресов уязвимых приёмников (best-effort, ~ms на канал).
+    int  mjScan(uint32_t msPerSweep = 2000);
+    int  mjCount() const { return _mjCount; }
+    const MjDevice& mjDevice(int i) const { return _mj[i]; }
+
+    // Найти активный канал устройства (ping с ACK). true + chOut при успехе.
+    bool mjPing(const uint8_t addr[5], uint8_t& chOut);
+    // Инъекция строки (US-раскладка) кадрами Logitech Unifying unencrypted.
+    // Возврат — число успешно отправленных символов.
+    int  mjInject(const MjDevice& d, const String& text);
+
 private:
     static NrfModule* _self;
     bool    _present = false;
     uint8_t _activity[kChannels] = {0};
+
+    void     mjBeginRx(uint8_t ch);                  // promiscuous-настройка RX
+    bool     mjSendFrame(const uint8_t* buf, uint8_t len);
+    MjDevice _mj[kMaxDevices];
+    int      _mjCount = 0;
 };
