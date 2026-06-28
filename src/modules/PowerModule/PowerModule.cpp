@@ -65,7 +65,8 @@ void PowerModule::pollBattery() {
         bqRead16(BQ_CURRENT, cur);
         _pct = (soc > 100) ? 100 : (int)soc;
         _mv  = mv;
-        _charging = ((int16_t)cur > 0);   // ток в плату = заряд
+        _ma  = (int16_t)cur;              // знаковый: >0 заряд, <0 разряд
+        _charging = (_ma > 0);            // ток в плату = заряд
         EventBus::publish(EventType::POWER_CHANGED, _pct);
     } else {
         _pct = -1;   // топливомер недоступен
@@ -93,9 +94,16 @@ void PowerModule::wake() {
 }
 
 void PowerModule::update(uint32_t now) {
+    // Таймаут гашения настраивается пользователем (0 = никогда).
+    const uint32_t sleepMs = (uint32_t)Settings::instance().screenTimeoutSec() * 1000;
+    if (sleepMs == 0) return;                 // энергосбережение по экрану отключено
+    // Затемнение — за треть таймаута до полного гашения (но не позже 20 с).
+    uint32_t dimMs = sleepMs * 2 / 3;
+    if (dimMs > VARSYS_DIM_MS) dimMs = VARSYS_DIM_MS;
+
     const uint32_t idle = now - _lastActivity;
 
-    if (!_screenOff && idle > VARSYS_SLEEP_MS) {
+    if (!_screenOff && idle > sleepMs) {
         UIManager::instance().display().setBrightness(0);
         _screenOff = true;
         // Экран погашен и пользователь ушёл — роняем частоту CPU (экран не
@@ -103,7 +111,7 @@ void PowerModule::update(uint32_t now) {
         setCpuFrequencyMhz(VARSYS_CPU_MHZ_IDLE);
         _lowPower = true;
         LOGD(TAG, "Screen off + CPU %dMHz (idle)", VARSYS_CPU_MHZ_IDLE);
-    } else if (!_dimmed && idle > VARSYS_DIM_MS) {
+    } else if (!_dimmed && idle > dimMs) {
         UIManager::instance().display().setBrightness(VARSYS_DIM_BRIGHTNESS);
         _dimmed = true;
         LOGD(TAG, "Screen dimmed (idle)");

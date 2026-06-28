@@ -15,6 +15,7 @@ static const char* K_VIBRO  = "vibro";
 static const char* K_DARK   = "dark";
 static const char* K_EXPERT = "expert";
 static const char* K_FREQ   = "subghz_khz";
+static const char* K_SLEEP  = "sleep_sec";
 
 Settings& Settings::instance() {
     static Settings s;
@@ -32,6 +33,7 @@ void Settings::begin() {
     _dark       = _prefs.getBool(K_DARK,  false);
     _expert     = _prefs.getBool(K_EXPERT, false);
     _subghzKhz  = _prefs.getUInt(K_FREQ,  433920);
+    _sleepSec   = _prefs.getUShort(K_SLEEP, VARSYS_SLEEP_MS / 1000);
 
     LOGI(TAG, "Loaded: bright=%u rot=%u lang=%s sound=%d freq=%lukHz",
          _brightness, _rotation, _lang == Lang::EN ? "EN" : "RU",
@@ -107,5 +109,12 @@ void Settings::setSubghzFreqKhz(uint32_t khz) {
     if (khz == _subghzKhz) return;
     _subghzKhz = khz;
     _prefs.putUInt(K_FREQ, khz);
+    EventBus::publish(EventType::SETTINGS_CHANGED);
+}
+
+void Settings::setScreenTimeoutSec(uint16_t sec) {
+    if (sec == _sleepSec) return;
+    _sleepSec = sec;
+    _prefs.putUShort(K_SLEEP, sec);
     EventBus::publish(EventType::SETTINGS_CHANGED);
 }

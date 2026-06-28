@@ -47,6 +47,12 @@ static const char* const RU[STR_COUNT] = {
     "Запустить",    // STR_RUN
     "Старт",        // STR_START
     "Перебор",      // STR_BRUTE
+    "Гашение экрана",// STR_SCREEN_TIMEOUT
+    "Батарея",      // STR_BATTERY
+    "Выкл",         // STR_OFF
+    "Напряжение",   // STR_VOLTAGE
+    "Ток",          // STR_CURRENT
+    "Зарядка",      // STR_CHARGING
 };
 
 static const char* const EN[STR_COUNT] = {
@@ -94,6 +100,12 @@ static const char* const EN[STR_COUNT] = {
     "Run",          // STR_RUN
     "Start",        // STR_START
     "Bruteforce",   // STR_BRUTE
+    "Screen timeout",// STR_SCREEN_TIMEOUT
+    "Battery",      // STR_BATTERY
+    "Off",          // STR_OFF
+    "Voltage",      // STR_VOLTAGE
+    "Current",      // STR_CURRENT
+    "Charging",     // STR_CHARGING
 };
 
 const char* tr(StrId id) {

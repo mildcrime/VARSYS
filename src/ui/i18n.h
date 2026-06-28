@@ -55,6 +55,12 @@ enum StrId : int {
     STR_RUN,
     STR_START,
     STR_BRUTE,
+    STR_SCREEN_TIMEOUT, // таймаут гашения экрана
+    STR_BATTERY,        // раздел/строка «Батарея»
+    STR_OFF,            // «Выкл» (значение таймаута = никогда)
+    STR_VOLTAGE,        // напряжение
+    STR_CURRENT,        // ток
+    STR_CHARGING,       // идёт зарядка
     STR_COUNT
 };
 

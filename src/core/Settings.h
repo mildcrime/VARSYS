@@ -49,6 +49,10 @@ public:
     uint32_t subghzFreqKhz() const { return _subghzKhz; }
     void     setSubghzFreqKhz(uint32_t khz);
 
+    // Таймаут гашения экрана, сек (0 = никогда). Влияет на энергосбережение.
+    uint16_t screenTimeoutSec() const { return _sleepSec; }
+    void     setScreenTimeoutSec(uint16_t sec);
+
     void     factoryReset();           // очистить NVS и перезагрузиться
 
 private:
@@ -66,4 +70,5 @@ private:
     bool     _dark;
     bool     _expert;
     uint32_t _subghzKhz;
+    uint16_t _sleepSec;
 };

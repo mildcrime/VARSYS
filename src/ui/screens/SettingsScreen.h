@@ -16,14 +16,16 @@ public:
     void onEvent(const Event& e) override;
 
 private:
-    static constexpr int kMaxRows = 8;
+    static constexpr int kMaxRows = 12;
 
     // Действие строки при нажатии.
-    enum Action { ACT_NONE, ACT_SOUND, ACT_VIBRO, ACT_DARK, ACT_LANG, ACT_EXPERT };
+    enum Action { ACT_NONE, ACT_SOUND, ACT_VIBRO, ACT_DARK, ACT_LANG, ACT_EXPERT,
+                  ACT_BRIGHT, ACT_TIMEOUT, ACT_BATTERY };
 
     struct Row {
         lv_obj_t* obj = nullptr;    // строка (для подсветки выбора)
         lv_obj_t* sw  = nullptr;    // тумблер (если есть)
+        lv_obj_t* val = nullptr;    // метка значения (для живого обновления)
         Action    act = ACT_NONE;
     };
 

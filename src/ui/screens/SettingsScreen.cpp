@@ -34,7 +34,8 @@ lv_obj_t* SettingsScreen::makeRow(lv_obj_t* parent, const char* sym,
     lv_obj_set_style_text_font(lb, &varsys_14, 0);
     lv_obj_align(lb, LV_ALIGN_LEFT_MID, 34, 0);
 
-    lv_obj_t* sw = nullptr;
+    lv_obj_t* sw  = nullptr;
+    lv_obj_t* val = nullptr;
     if (hasSwitch) {
         sw = lv_switch_create(row);
         lv_obj_set_size(sw, 40, 22);
@@ -43,15 +44,48 @@ lv_obj_t* SettingsScreen::makeRow(lv_obj_t* parent, const char* sym,
         if (swOn) lv_obj_add_state(sw, LV_STATE_CHECKED);
         lv_obj_clear_flag(sw, LV_OBJ_FLAG_CLICKABLE);   // управляем энкодером
     } else if (value) {
-        lv_obj_t* v = lv_label_create(row);
-        lv_label_set_text(v, value);
-        lv_obj_set_style_text_color(v, act == ACT_LANG ? cBlue() : cText2(), 0);
-        lv_obj_set_style_text_font(v, &varsys_14, 0);
-        lv_obj_align(v, LV_ALIGN_RIGHT_MID, -10, 0);
+        val = lv_label_create(row);
+        lv_label_set_text(val, value);
+        // Интерактивные значения (язык/яркость/таймаут) подсвечиваем синим.
+        bool interactive = (act == ACT_LANG || act == ACT_BRIGHT ||
+                            act == ACT_TIMEOUT || act == ACT_BATTERY);
+        lv_obj_set_style_text_color(val, interactive ? cBlue() : cText2(), 0);
+        lv_obj_set_style_text_font(val, &varsys_14, 0);
+        lv_obj_align(val, LV_ALIGN_RIGHT_MID, -10, 0);
     }
 
-    if (_count < kMaxRows) _rows[_count++] = { row, sw, act };
+    if (_count < kMaxRows) _rows[_count++] = { row, sw, val, act };
     return row;
+}
+
+// Шаги яркости (0..255) и таймаута экрана (сек, 0 = выкл).
+static const uint8_t  kBrightSteps[]  = { 51, 102, 153, 204, 255 };
+static const uint16_t kTimeoutSteps[] = { 15, 30, 60, 120, 0 };
+
+static uint8_t nextBright(uint8_t cur) {
+    // Находим ближайший текущий шаг и берём следующий по кругу.
+    int best = 0, bestd = 999;
+    for (int i = 0; i < (int)(sizeof(kBrightSteps)); ++i) {
+        int d = abs((int)kBrightSteps[i] - (int)cur);
+        if (d < bestd) { bestd = d; best = i; }
+    }
+    return kBrightSteps[(best + 1) % (int)sizeof(kBrightSteps)];
+}
+
+static uint16_t nextTimeout(uint16_t cur) {
+    const int n = sizeof(kTimeoutSteps) / sizeof(kTimeoutSteps[0]);
+    for (int i = 0; i < n; ++i)
+        if (kTimeoutSteps[i] == cur) return kTimeoutSteps[(i + 1) % n];
+    return kTimeoutSteps[0];
+}
+
+static void fmtBright(char* buf, size_t n, uint8_t v) {
+    snprintf(buf, n, "%d%%", (v * 100 + 127) / 255);
+}
+
+static void fmtTimeout(char* buf, size_t n, uint16_t sec) {
+    if (sec == 0) snprintf(buf, n, "%s", tr(STR_OFF));
+    else          snprintf(buf, n, "%us", sec);
 }
 
 void SettingsScreen::onCreate(lv_obj_t* parent) {
@@ -74,19 +108,27 @@ void SettingsScreen::onCreate(lv_obj_t* parent) {
     makeRow(left, ICON_EXPERT, cRed(), tr(STR_EXPERT_MODE), true, s.expert(),
             nullptr, false, ACT_EXPERT);
 
-    // Правая колонка — значения + язык.
+    // Правая колонка — значения (прокручиваемая: строк больше, чем влезает).
     lv_obj_t* right = card(_root);
     lv_obj_set_size(right, 148, 122);
     lv_obj_align(right, LV_ALIGN_BOTTOM_RIGHT, -10, -8);
     lv_obj_set_flex_flow(right, LV_FLEX_FLOW_COLUMN);
+    lv_obj_add_flag(right, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scroll_dir(right, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(right, LV_SCROLLBAR_MODE_OFF);
 
-    char bright[8];
-    snprintf(bright, sizeof(bright), "%u%%", s.brightness());
-    makeRow(right, ICON_BRIGHTNESS, cGray(),   tr(STR_BRIGHTNESS), false, false, bright,
-            true, ACT_NONE);
-    makeRow(right, ICON_LANGUAGE,   cBlue(),   tr(STR_LANGUAGE),   false, false, tr(STR_LANG_NAME),
+    char bright[8];   fmtBright(bright, sizeof(bright), s.brightness());
+    char timeout[12]; fmtTimeout(timeout, sizeof(timeout), s.screenTimeoutSec());
+
+    makeRow(right, ICON_BRIGHTNESS, cGray(), tr(STR_BRIGHTNESS), false, false, bright,
+            true, ACT_BRIGHT);
+    makeRow(right, ICON_MOON, lv_color_hex(0x5E5CE6), tr(STR_SCREEN_TIMEOUT), false, false,
+            timeout, true, ACT_TIMEOUT);
+    makeRow(right, ICON_LANGUAGE, cBlue(), tr(STR_LANGUAGE), false, false, tr(STR_LANG_NAME),
             true, ACT_LANG);
-    makeRow(right, ICON_INFO,       cGray(),   tr(STR_ABOUT),      false, false, "v" VARSYS_VERSION,
+    makeRow(right, ICON_BATTERY, cGreen(), tr(STR_BATTERY), false, false, "›",
+            true, ACT_BATTERY);
+    makeRow(right, ICON_INFO, cGray(), tr(STR_ABOUT), false, false, "v" VARSYS_VERSION,
             false, ACT_NONE);
 }
 
@@ -95,6 +137,7 @@ void SettingsScreen::select(int idx, bool on) {
     lv_obj_t* row = _rows[idx].obj;
     lv_obj_set_style_bg_color(row, cTint(), 0);
     lv_obj_set_style_bg_opa(row, on ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+    if (on) lv_obj_scroll_to_view(row, LV_ANIM_ON);   // докрутить, если за краем
 }
 
 void SettingsScreen::onShow() {
@@ -121,6 +164,28 @@ void SettingsScreen::activateSelected() {
         case ACT_LANG:
             // Публикует LANG_CHANGED -> UIManager пересоберёт экраны.
             s.toggleLanguage();
+            return;
+        case ACT_BRIGHT: {
+            uint8_t v = nextBright(s.brightness());
+            s.setBrightness(v);
+            UIManager::instance().display().setBrightness(v);   // применить сразу
+            if (r.val) {
+                char buf[8]; fmtBright(buf, sizeof(buf), v);
+                lv_label_set_text(r.val, buf);
+            }
+            return;
+        }
+        case ACT_TIMEOUT: {
+            uint16_t t = nextTimeout(s.screenTimeoutSec());
+            s.setScreenTimeoutSec(t);
+            if (r.val) {
+                char buf[12]; fmtTimeout(buf, sizeof(buf), t);
+                lv_label_set_text(r.val, buf);
+            }
+            return;
+        }
+        case ACT_BATTERY:
+            UIManager::instance().pushScreen("Battery");
             return;
         default: return;
     }

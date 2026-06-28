@@ -21,6 +21,7 @@ public:
 
     int      batteryPercent() const { return _pct; }   // -1 если недоступно
     uint16_t batteryMv()      const { return _mv; }
+    int16_t  batteryMa()      const { return _ma; }    // >0 заряд, <0 разряд
     bool     charging()       const { return _charging; }
 
     // Корректное выключение устройства (отпускает линию питания).
@@ -35,6 +36,7 @@ private:
 
     int      _pct      = -1;
     uint16_t _mv       = 0;
+    int16_t  _ma       = 0;
     bool     _charging = false;
 
     uint32_t _lastActivity = 0;
