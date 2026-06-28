@@ -50,8 +50,8 @@ void PortalScreen::onShow() {
 void PortalScreen::onEvent(const Event& e) {
     if (e.type == EventType::INPUT_BTN_CLICK) {
         EvilPortalModule& p = EvilPortalModule::instance();
-        if (p.active()) { p.stop();  Notify::toast(tr(STR_STOP), Notify::Info); }
-        else            { p.start(); Notify::toast(tr(STR_START), Notify::Warn); }
+        if (p.active()) { p.deactivate(); Notify::toast(tr(STR_STOP), Notify::Info); }
+        else            { p.activate();   Notify::toast(tr(STR_START), Notify::Warn); }
         refresh();
     }
 }

@@ -71,10 +71,10 @@ void WardriveScreen::onEvent(const Event& e) {
     if (e.type != EventType::INPUT_BTN_CLICK) return;
     WardriveModule& w = WardriveModule::instance();
     if (w.active()) {
-        w.stop();
+        w.deactivate();
         Notify::toast(tr(STR_STOP), Notify::Info);
     } else {
-        w.start();
+        w.activate();
         Notify::toast(tr(STR_START), Notify::Warn);
     }
     refresh();

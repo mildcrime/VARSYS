@@ -18,8 +18,8 @@ public:
 
     static WebUiModule& instance() { return *_self; }
 
-    void start();
-    void stop();
+    void activate();      // поднять AP+сервер (НЕ lifecycle start(): иначе автозапуск)
+    void deactivate();
     bool active() const { return _active; }
     String ssid() const { return _ssid; }
     String ip()   const { return _ip; }

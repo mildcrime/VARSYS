@@ -16,7 +16,7 @@ bool WardriveModule::init() {
     return true;
 }
 
-void WardriveModule::start() {
+void WardriveModule::activate() {
     if (_active) return;
     _path = PATH;
     _seen.clear();
@@ -38,7 +38,7 @@ void WardriveModule::start() {
     LOGI(TAG, "wardrive started -> %s", _path.c_str());
 }
 
-void WardriveModule::stop() {
+void WardriveModule::deactivate() {
     if (!_active) return;
     _active = false;
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }

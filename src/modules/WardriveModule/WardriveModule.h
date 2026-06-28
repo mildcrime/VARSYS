@@ -18,8 +18,8 @@ public:
 
     static WardriveModule& instance() { return *_self; }
 
-    void start();                 // открыть новый CSV и начать лог
-    void stop();                  // остановить лог
+    void activate();              // открыть новый CSV и начать лог (НЕ lifecycle start())
+    void deactivate();            // остановить лог
     bool active() const { return _active; }
 
     uint32_t apCount() const { return _apCount; }   // уникальных точек за сессию

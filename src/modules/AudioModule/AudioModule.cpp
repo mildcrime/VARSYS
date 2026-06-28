@@ -13,11 +13,11 @@ AudioModule* AudioModule::_self = nullptr;
 
 bool AudioModule::init() {
     _self = this;
-    // Стартовый бип по окончании загрузки (если звук включён).
-    EventBus::subscribe(EventType::SYS_BOOT_DONE, [](const Event&) {
-        if (Settings::instance().sound()) AudioModule::instance().beep();
-    });
-    LOGI(TAG, "Audio ready (I2S on demand)");
+    // ВНИМАНИЕ: PIN_SPK_WCLK (I2S WS) == 40 == PIN_LCD_RST (сброс дисплея).
+    // Любая инициализация I2S дёргает линию сброса панели -> белый экран.
+    // Поэтому стартовый бип ОТКЛЮЧЁН и аудио не трогает пин 40, пока не
+    // выяснены корректные I2S-пины амперага T-Embed CC1101.
+    LOGI(TAG, "Audio ready (muted: I2S WS clashes with LCD_RST=40)");
     return true;
 }
 

@@ -13,7 +13,7 @@ bool EvilPortalModule::init() {
     return true;
 }
 
-void EvilPortalModule::start(const String& ssid) {
+void EvilPortalModule::activate(const String& ssid) {
     if (_active) return;
     _ssid = ssid;
     _captured = 0;
@@ -32,7 +32,7 @@ void EvilPortalModule::start(const String& ssid) {
     LOGW(TAG, "captive portal up: %s @ %s", _ssid.c_str(), ip.toString().c_str());
 }
 
-void EvilPortalModule::stop() {
+void EvilPortalModule::deactivate() {
     if (!_active) return;
     _dns.stop();
     _server.stop();

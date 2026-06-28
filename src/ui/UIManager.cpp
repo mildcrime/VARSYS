@@ -100,10 +100,10 @@ bool UIManager::init() {
     // Заставка-оверлей (всегда поверх всего, в т.ч. статус-бара).
     Splash::create();
 
-    buildScreens();
-
-    LOGI(TAG, "LVGL initialized (%dx%d), screens: %u",
-         _display.width(), _display.height(), (unsigned)_screens.size());
+    // ВАЖНО: экраны НЕ создаём здесь. onCreate ряда экранов обращается к другим
+    // модулям (RadioModule и т.п.), которые инициализируются ПОСЛЕ UI. Сборку
+    // экранов делаем в start() — он вызывается из startAll() после initAll().
+    LOGI(TAG, "LVGL initialized (%dx%d)", _display.width(), _display.height());
     return true;
 }
 
@@ -188,6 +188,11 @@ bool UIManager::popScreen(lv_scr_load_anim_t anim) {
 }
 
 void UIManager::start() {
+    // Экраны создаём здесь (после initAll): onCreate ряда экранов читает
+    // состояние других модулей, которые к этому моменту уже инициализированы.
+    buildScreens();
+    LOGI(TAG, "screens built: %u", (unsigned)_screens.size());
+
     // Дом — стартовый экран; заставка-оверлей играет поверх него.
     setScreen("Home");
     Splash::play(2000);

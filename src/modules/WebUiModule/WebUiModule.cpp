@@ -18,7 +18,7 @@ bool WebUiModule::init() {
     return true;   // сервер стартует по запросу с экрана
 }
 
-void WebUiModule::start() {
+void WebUiModule::activate() {
     if (_active) return;
 
     uint8_t mac[6];
@@ -37,7 +37,7 @@ void WebUiModule::start() {
     LOGI(TAG, "WebUI up: %s  http://%s", _ssid.c_str(), _ip.c_str());
 }
 
-void WebUiModule::stop() {
+void WebUiModule::deactivate() {
     if (!_active) return;
     _server.stop();
     WiFi.softAPdisconnect(true);
