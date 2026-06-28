@@ -33,7 +33,7 @@ void Settings::begin() {
     _lang       = (Lang)_prefs.getUChar(K_LANG, (uint8_t)Lang::EN);   // по умолчанию English
     _sound      = _prefs.getBool(K_SOUND, true);
     _vibro      = _prefs.getBool(K_VIBRO, false);
-    _dark       = _prefs.getBool(K_DARK,  false);
+    _dark       = _prefs.getBool(K_DARK,  true);    // тёмная по умолчанию
     _expert     = _prefs.getBool(K_EXPERT, false);
     _subghzKhz  = _prefs.getUInt(K_FREQ,  433920);
     _sleepSec   = _prefs.getUShort(K_SLEEP, VARSYS_SLEEP_MS / 1000);
