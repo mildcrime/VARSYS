@@ -35,6 +35,11 @@ public:
     // Активная ФС: SD при наличии, иначе LittleFS.
     fs::FS* fs() { return _fs; }
 
+    // Дозапись строки в файл (создаёт при отсутствии). Доступ к SD на общей
+    // шине обёрнут SpiBusGuard. Для CSV-логов (wardriving и т.п.).
+    bool appendLine(const String& path, const String& line);
+    bool exists(const String& path);
+
     // --- Библиотека сигналов ---
     bool saveSignal(const SignalRecord& rec);
     bool loadSignal(const String& name, SignalRecord& out);

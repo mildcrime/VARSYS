@@ -37,6 +37,22 @@ void StorageModule::ensureDir(const char* path) {
     if (!_fs->exists(path)) _fs->mkdir(path);
 }
 
+bool StorageModule::appendLine(const String& path, const String& line) {
+    if (!_fs) return false;
+    hal::SpiBusGuard guard;
+    File f = _fs->open(path, FILE_APPEND);
+    if (!f) { LOGE(TAG, "append open failed: %s", path.c_str()); return false; }
+    f.println(line);
+    f.close();
+    return true;
+}
+
+bool StorageModule::exists(const String& path) {
+    if (!_fs) return false;
+    hal::SpiBusGuard guard;
+    return _fs->exists(path);
+}
+
 bool StorageModule::saveSignal(const SignalRecord& rec) {
     if (!_fs) return false;
     hal::SpiBusGuard guard;

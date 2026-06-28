@@ -30,6 +30,7 @@
 #include "ui/screens/BruteScreen.h"
 #include "ui/screens/FilesScreen.h"
 #include "ui/screens/BatteryScreen.h"
+#include "ui/screens/WardriveScreen.h"
 
 static const char* TAG = "UI";
 
@@ -126,6 +127,7 @@ void UIManager::buildScreens() {
     addScreen(new BruteScreen());
     addScreen(new FilesScreen());
     addScreen(new BatteryScreen());
+    addScreen(new WardriveScreen());
 }
 
 void UIManager::addScreen(Screen* screen) {

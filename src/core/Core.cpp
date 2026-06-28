@@ -26,6 +26,7 @@
 #include "modules/EvilPortalModule/EvilPortalModule.h"
 #include "modules/IButtonModule/IButtonModule.h"
 #include "modules/FmModule/FmModule.h"
+#include "modules/WardriveModule/WardriveModule.h"
 #include "ui/UIManager.h"
 // На следующих этапах сюда добавятся: IrModule, WifiModule и т.д.
 
@@ -51,6 +52,7 @@ static AudioModule   s_audio;
 static EvilPortalModule s_portal;
 static IButtonModule s_ibutton;
 static FmModule      s_fm;
+static WardriveModule s_wardrive;
 
 Core& Core::instance() {
     static Core core;
@@ -82,6 +84,7 @@ void Core::registerModules() {
     _modules.add(&s_portal);
     _modules.add(&s_ibutton);
     _modules.add(&s_fm);
+    _modules.add(&s_wardrive);
 }
 
 void Core::begin() {
