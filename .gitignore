@@ -15,3 +15,6 @@ build.log
 *.elf
 *.map
 .DS_Store
+
+# firmware images for the web flasher
+!flasher/*.bin

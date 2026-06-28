@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VARSYS — Web Flasher</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    background: radial-gradient(120% 120% at 50% 0%, #14233a 0%, #0a0a0b 60%);
+    color: #f2f2f7; display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+  .card { width: 100%; max-width: 460px; text-align: center; }
+  .logo { font-size: 44px; font-weight: 600; letter-spacing: 2px; margin: 0 0 4px; }
+  .logo .a { background: linear-gradient(90deg,#0a84ff,#30d6c0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: #8e8e93; font-size: 15px; margin: 0 0 28px; }
+  .panel { background: #1c1c1e; border: 0.5px solid #38383a; border-radius: 16px; padding: 22px; }
+  esp-web-install-button { --esp-tools-button-color:#fff; --esp-tools-button-text-color:#0a84ff; }
+  .btn { display:inline-block; }
+  button.primary {
+    appearance: none; border: 0; border-radius: 12px; cursor: pointer;
+    background: #0a84ff; color: #fff; font-size: 16px; font-weight: 600;
+    padding: 14px 28px; font-family: inherit;
+  }
+  ol { text-align: left; color: #c7c7cc; font-size: 14px; line-height: 1.7; margin: 22px 4px 0; padding-left: 20px; }
+  .note { margin-top: 18px; font-size: 13px; color: #8e8e93; }
+  .warn { margin-top: 14px; font-size: 12px; color: #ff9f0a; }
+  .unsupported { display:none; color:#ff453a; font-size:14px; margin-top:14px; }
+  a { color: #64d2ff; text-decoration: none; }
+  .row { display:flex; gap:16px; justify-content:center; margin-top:18px; font-size:13px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="logo">VAR<span class="a">SYS</span></h1>
+    <p class="sub">Web Flasher · T‑Embed CC1101 (ESP32‑S3)</p>
+
+    <div class="panel">
+      <div class="btn">
+        <esp-web-install-button manifest="manifest.json">
+          <button slot="activate" class="primary">⚡ Install / Прошить</button>
+          <span slot="unsupported" class="unsupported">
+            Браузер не поддерживает Web Serial. Откройте в Chrome или Edge на
+            компьютере. / Use Chrome or Edge on desktop.
+          </span>
+          <span slot="not-allowed" class="unsupported">
+            Доступ к порту запрещён. / Serial access not allowed.
+          </span>
+        </esp-web-install-button>
+      </div>
+
+      <ol>
+        <li>Подключите устройство по USB. / Connect the device via USB.</li>
+        <li>Нажмите «Install», выберите COM/serial‑порт устройства.<br>Click “Install” and pick the device’s serial port.</li>
+        <li>Дождитесь окончания прошивки. / Wait for the flash to finish.</li>
+      </ol>
+
+      <p class="warn">⚠️ Только Chrome / Edge на ПК · Only desktop Chrome / Edge</p>
+    </div>
+
+    <div class="row">
+      <a href="https://github.com/mildcrime/VARSYS">GitHub</a>
+      <a href="https://github.com/mildcrime/VARSYS/blob/main/docs/USAGE_EN.md">Guide</a>
+      <a href="https://github.com/mildcrime/VARSYS/blob/main/DISCLAIMER.md">Disclaimer</a>
+    </div>
+    <p class="note">v0.1.0 · authorized use only</p>
+  </div>
+
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+</body>
+</html>
