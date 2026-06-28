@@ -135,8 +135,10 @@ void NfcScreen::onShow() {
     for (int i = 0; i < kRows; ++i) select(i, false);
     select(_selected, true);
     if (!NfcModule::instance().present()) {
-        lv_label_set_text(_status, tr(STR_NO_MODULE));
-        lv_obj_set_style_text_color(_status, cRed(), 0);
+        if (!_hwPanel)
+            _hwPanel = ui::hwMissingPanel(_root, "PN532 NFC", "I2C / QWIIC");
+    } else if (_hwPanel) {
+        lv_obj_del(_hwPanel); _hwPanel = nullptr;
     }
 }
 

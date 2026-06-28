@@ -53,6 +53,8 @@ static const char* const RU[STR_COUNT] = {
     "Напряжение",   // STR_VOLTAGE
     "Ток",          // STR_CURRENT
     "Зарядка",      // STR_CHARGING
+    "Требуется",    // STR_REQUIRES
+    "подключите к", // STR_CONNECT_TO
 };
 
 static const char* const EN[STR_COUNT] = {
@@ -106,6 +108,8 @@ static const char* const EN[STR_COUNT] = {
     "Voltage",      // STR_VOLTAGE
     "Current",      // STR_CURRENT
     "Charging",     // STR_CHARGING
+    "Requires",     // STR_REQUIRES
+    "connect to",   // STR_CONNECT_TO
 };
 
 const char* tr(StrId id) {

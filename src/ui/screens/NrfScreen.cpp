@@ -43,6 +43,13 @@ void NrfScreen::refresh() {
 }
 
 void NrfScreen::onShow() {
+    if (!NrfModule::instance().present()) {
+        if (!_hwPanel)
+            _hwPanel = ui::hwMissingPanel(_root, "NRF24L01", "QWIIC (SPI)");
+        return;   // без железа сканировать нечего
+    }
+    if (_hwPanel) { lv_obj_del(_hwPanel); _hwPanel = nullptr; }
+
     NrfModule::instance().resetScan();
     if (_task) Scheduler::instance().cancel(_task);
     refresh();

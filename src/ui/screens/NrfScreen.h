@@ -16,5 +16,6 @@ private:
     lv_obj_t*          _chart = nullptr;
     lv_chart_series_t* _ser   = nullptr;
     lv_obj_t*          _info  = nullptr;
+    lv_obj_t*          _hwPanel = nullptr;   // панель «нет железа»
     uint32_t           _task  = 0;
 };

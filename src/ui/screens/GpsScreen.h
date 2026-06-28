@@ -16,5 +16,6 @@ private:
     lv_obj_t* _sats = nullptr;
     lv_obj_t* _coord = nullptr;
     lv_obj_t* _fix  = nullptr;
+    lv_obj_t* _hwPanel = nullptr;   // панель «нет железа» (нет данных NMEA)
     uint32_t  _task = 0;
 };

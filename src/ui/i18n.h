@@ -61,6 +61,8 @@ enum StrId : int {
     STR_VOLTAGE,        // напряжение
     STR_CURRENT,        // ток
     STR_CHARGING,       // идёт зарядка
+    STR_REQUIRES,       // «Требуется» (нет нужного железа)
+    STR_CONNECT_TO,     // «подключите к» (порт)
     STR_COUNT
 };
 

@@ -37,6 +37,15 @@ void GpsScreen::onCreate(lv_obj_t* parent) {
 
 void GpsScreen::refresh() {
     GpsModule& g = GpsModule::instance();
+
+    // Нет ни одного байта NMEA — модуль, вероятно, не подключён.
+    if (g.charsRx() == 0) {
+        if (!_hwPanel)
+            _hwPanel = ui::hwMissingPanel(_root, "GPS module", "QWIIC (UART)");
+        return;
+    }
+    if (_hwPanel) { lv_obj_del(_hwPanel); _hwPanel = nullptr; }
+
     lv_label_set_text_fmt(_sats, "%d", g.sats());
     if (g.hasFix()) {
         lv_label_set_text(_fix, "FIX");

@@ -22,6 +22,7 @@ private:
 
     lv_obj_t* _freq   = nullptr;
     lv_obj_t* _status = nullptr;
+    lv_obj_t* _hwPanel = nullptr;   // панель «нет железа»
     lv_obj_t* _rows[kRows] = {};
     int       _selected = 0;
 };

@@ -62,4 +62,35 @@ lv_obj_t* card(lv_obj_t* parent) {
     return c;
 }
 
+lv_obj_t* hwMissingPanel(lv_obj_t* parent, const char* hw, const char* port) {
+    lv_obj_t* c = card(parent);
+    lv_obj_set_size(c, 300, 110);
+    lv_obj_align(c, LV_ALIGN_BOTTOM_MID, 0, -8);
+
+    lv_obj_t* ic = lv_label_create(c);
+    lv_label_set_text(ic, ICON_EXPERT);          // знак внимания
+    lv_obj_set_style_text_color(ic, cOrange(), 0);
+    lv_obj_set_style_text_font(ic, &varsys_22, 0);
+    lv_obj_align(ic, LV_ALIGN_TOP_MID, 0, 12);
+
+    // «Требуется: <железо>»
+    lv_obj_t* req = lv_label_create(c);
+    lv_label_set_text_fmt(req, "%s: %s", tr(STR_REQUIRES), hw);
+    lv_obj_set_style_text_color(req, cText(), 0);
+    lv_obj_set_style_text_font(req, &varsys_16, 0);
+    lv_label_set_long_mode(req, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(req, 280);
+    lv_obj_set_style_text_align(req, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(req, LV_ALIGN_CENTER, 0, 4);
+
+    // «подключите к <порт>»
+    lv_obj_t* hint = lv_label_create(c);
+    lv_label_set_text_fmt(hint, "%s %s", tr(STR_CONNECT_TO), port);
+    lv_obj_set_style_text_color(hint, cText2(), 0);
+    lv_obj_set_style_text_font(hint, &varsys_12, 0);
+    lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -10);
+
+    return c;
+}
+
 } // namespace ui

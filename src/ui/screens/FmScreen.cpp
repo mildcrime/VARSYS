@@ -105,6 +105,12 @@ void FmScreen::onShow() {
     _selected = 0;
     for (int i = 0; i < kRows; ++i) select(i, false);
     select(_selected, true);
+    if (!FmModule::instance().present()) {
+        if (!_hwPanel)
+            _hwPanel = ui::hwMissingPanel(_root, "Si4713 FM TX", "I2C / QWIIC");
+    } else if (_hwPanel) {
+        lv_obj_del(_hwPanel); _hwPanel = nullptr;
+    }
     refresh();
 }
 

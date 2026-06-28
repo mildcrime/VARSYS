@@ -43,4 +43,9 @@ lv_obj_t* header(lv_obj_t* parent, const char* title);
 // Белая карточка iOS (скругление, без рамки, без прокрутки).
 lv_obj_t* card(lv_obj_t* parent);
 
+// Панель «нет нужного железа»: предупреждение + «Требуется: <hw>» +
+// «подключите к <port>». Для экранов внешних модулей, когда железо не найдено.
+// Возвращает созданную карточку (можно удалить при появлении железа).
+lv_obj_t* hwMissingPanel(lv_obj_t* parent, const char* hw, const char* port);
+
 } // namespace ui
