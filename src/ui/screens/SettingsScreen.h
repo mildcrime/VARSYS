@@ -20,7 +20,7 @@ private:
 
     // Действие строки при нажатии.
     enum Action { ACT_NONE, ACT_SOUND, ACT_VIBRO, ACT_DARK, ACT_LANG, ACT_EXPERT,
-                  ACT_BRIGHT, ACT_TIMEOUT, ACT_BATTERY };
+                  ACT_BRIGHT, ACT_TIMEOUT, ACT_BATTERY, ACT_LED, ACT_LEDBRIGHT };
 
     struct Row {
         lv_obj_t* obj = nullptr;    // строка (для подсветки выбора)

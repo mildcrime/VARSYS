@@ -3,6 +3,7 @@
 #include "ui/UIManager.h"
 #include "ui/i18n.h"
 #include "core/Settings.h"
+#include "modules/LedModule/LedModule.h"
 
 using namespace ui;
 
@@ -26,7 +27,7 @@ void HomeScreen::addTile(const char* sym, lv_color_t color,
     lv_obj_set_style_text_font(g, &varsys_22, 0);
     lv_obj_center(g);
 
-    _tiles[_count++] = { ic, target, label };
+    _tiles[_count++] = { ic, target, label, color };
 }
 
 void HomeScreen::onCreate(lv_obj_t* parent) {
@@ -100,6 +101,14 @@ void HomeScreen::applyFocus() {
 
     _selected = best;
     if (_name) lv_label_set_text(_name, _tiles[best].label);
+    updateLed();
+}
+
+void HomeScreen::updateLed() {
+    if (_selected == _ledTile) return;        // цвет уже соответствует
+    _ledTile = _selected;
+    uint32_t v = lv_color_to32(_tiles[_selected].color);   // 0xAARRGGBB
+    LedModule::instance().setColor((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF);
 }
 
 void HomeScreen::onShow() {

@@ -22,6 +22,7 @@ private:
         lv_obj_t*   icon   = nullptr;
         const char* target = nullptr;
         const char* label  = nullptr;
+        lv_color_t  color;            // цвет плитки (для подсветки LED)
     };
 
     void addTile(const char* sym, lv_color_t color, const char* label, const char* target);
@@ -30,9 +31,12 @@ private:
     void openSelected();
     static void scrollCb(lv_event_t* e);
 
+    void updateLed();                  // подсветить LED цветом выбранной плитки
+
     lv_obj_t* _row  = nullptr;
     lv_obj_t* _name = nullptr;
     Tile      _tiles[kMax];
     int       _count    = 0;
     int       _selected = 0;
+    int       _ledTile  = -1;          // какой плитке соответствует цвет LED
 };

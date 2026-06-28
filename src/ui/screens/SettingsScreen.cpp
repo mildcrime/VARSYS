@@ -96,15 +96,19 @@ void SettingsScreen::onCreate(lv_obj_t* parent) {
 
     Settings& s = Settings::instance();
 
-    // Левая колонка — тумблеры.
+    // Левая колонка — тумблеры (прокручиваемая).
     lv_obj_t* left = card(_root);
     lv_obj_set_size(left, 142, 122);
     lv_obj_align(left, LV_ALIGN_BOTTOM_LEFT, 10, -8);
     lv_obj_set_flex_flow(left, LV_FLEX_FLOW_COLUMN);
+    lv_obj_add_flag(left, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scroll_dir(left, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(left, LV_SCROLLBAR_MODE_OFF);
     makeRow(left, ICON_SOUND, cOrange(), tr(STR_SOUND), true, s.sound(), nullptr, true,  ACT_SOUND);
     makeRow(left, ICON_VIBRO, cRed(),    tr(STR_VIBRO), true, s.vibro(), nullptr, true,  ACT_VIBRO);
     makeRow(left, ICON_MOON,  lv_color_hex(0x5E5CE6), tr(STR_DARK), true, s.darkTheme(),
             nullptr, true, ACT_DARK);
+    makeRow(left, ICON_SIGNAL, cGreen(), "LED", true, s.ledOn(), nullptr, true, ACT_LED);
     makeRow(left, ICON_EXPERT, cRed(), tr(STR_EXPERT_MODE), true, s.expert(),
             nullptr, false, ACT_EXPERT);
 
@@ -119,9 +123,11 @@ void SettingsScreen::onCreate(lv_obj_t* parent) {
 
     char bright[8];   fmtBright(bright, sizeof(bright), s.brightness());
     char timeout[12]; fmtTimeout(timeout, sizeof(timeout), s.screenTimeoutSec());
+    char ledbr[8];    fmtBright(ledbr, sizeof(ledbr), s.ledBrightness());
 
     makeRow(right, ICON_BRIGHTNESS, cGray(), tr(STR_BRIGHTNESS), false, false, bright,
             true, ACT_BRIGHT);
+    makeRow(right, ICON_SIGNAL, cGreen(), "LED", false, false, ledbr, true, ACT_LEDBRIGHT);
     makeRow(right, ICON_MOON, lv_color_hex(0x5E5CE6), tr(STR_SCREEN_TIMEOUT), false, false,
             timeout, true, ACT_TIMEOUT);
     makeRow(right, ICON_LANGUAGE, cBlue(), tr(STR_LANGUAGE), false, false, tr(STR_LANG_NAME),
@@ -161,6 +167,7 @@ void SettingsScreen::activateSelected() {
         case ACT_VIBRO:  s.setVibro(!s.vibro());         break;
         case ACT_DARK:   s.setDarkTheme(!s.darkTheme()); break;
         case ACT_EXPERT: s.setExpert(!s.expert());       break;
+        case ACT_LED:    s.setLedOn(!s.ledOn());         break;
         case ACT_LANG:
             // Публикует LANG_CHANGED -> UIManager пересоберёт экраны.
             s.toggleLanguage();
@@ -184,6 +191,15 @@ void SettingsScreen::activateSelected() {
             }
             return;
         }
+        case ACT_LEDBRIGHT: {
+            uint8_t v = nextBright(s.ledBrightness());
+            s.setLedBrightness(v);   // LedModule применит через SETTINGS_CHANGED
+            if (r.val) {
+                char buf[8]; fmtBright(buf, sizeof(buf), v);
+                lv_label_set_text(r.val, buf);
+            }
+            return;
+        }
         case ACT_BATTERY:
             UIManager::instance().pushScreen("Battery");
             return;
@@ -194,6 +210,7 @@ void SettingsScreen::activateSelected() {
         bool on = (r.act == ACT_SOUND)  ? s.sound()
                 : (r.act == ACT_VIBRO)  ? s.vibro()
                 : (r.act == ACT_EXPERT) ? s.expert()
+                : (r.act == ACT_LED)    ? s.ledOn()
                 : s.darkTheme();
         if (on) lv_obj_add_state(r.sw, LV_STATE_CHECKED);
         else    lv_obj_clear_state(r.sw, LV_STATE_CHECKED);

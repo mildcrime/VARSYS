@@ -57,6 +57,12 @@ public:
     uint8_t  badusbLayout() const { return _kbLayout; }
     void     setBadusbLayout(uint8_t v);
 
+    // RGB-светодиоды: вкл/выкл и яркость (0..255).
+    bool     ledOn() const { return _ledOn; }
+    void     setLedOn(bool v);
+    uint8_t  ledBrightness() const { return _ledBright; }
+    void     setLedBrightness(uint8_t v);
+
     void     factoryReset();           // очистить NVS и перезагрузиться
 
 private:
@@ -76,4 +82,6 @@ private:
     uint32_t _subghzKhz;
     uint16_t _sleepSec;
     uint8_t  _kbLayout;
+    bool     _ledOn;
+    uint8_t  _ledBright;
 };

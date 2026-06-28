@@ -17,6 +17,8 @@ static const char* K_EXPERT = "expert";
 static const char* K_FREQ   = "subghz_khz";
 static const char* K_SLEEP  = "sleep_sec";
 static const char* K_KBLAY  = "kb_layout";
+static const char* K_LEDON  = "led_on";
+static const char* K_LEDBR  = "led_br";
 
 Settings& Settings::instance() {
     static Settings s;
@@ -36,6 +38,8 @@ void Settings::begin() {
     _subghzKhz  = _prefs.getUInt(K_FREQ,  433920);
     _sleepSec   = _prefs.getUShort(K_SLEEP, VARSYS_SLEEP_MS / 1000);
     _kbLayout   = _prefs.getUChar(K_KBLAY, 0);   // 0 = US
+    _ledOn      = _prefs.getBool(K_LEDON, true);
+    _ledBright  = _prefs.getUChar(K_LEDBR, 80);
 
     LOGI(TAG, "Loaded: bright=%u rot=%u lang=%s sound=%d freq=%lukHz",
          _brightness, _rotation, _lang == Lang::EN ? "EN" : "RU",
@@ -125,5 +129,19 @@ void Settings::setBadusbLayout(uint8_t v) {
     if (v == _kbLayout) return;
     _kbLayout = v;
     _prefs.putUChar(K_KBLAY, v);
+    EventBus::publish(EventType::SETTINGS_CHANGED);
+}
+
+void Settings::setLedOn(bool v) {
+    if (v == _ledOn) return;
+    _ledOn = v;
+    _prefs.putBool(K_LEDON, v);
+    EventBus::publish(EventType::SETTINGS_CHANGED);
+}
+
+void Settings::setLedBrightness(uint8_t v) {
+    if (v == _ledBright) return;
+    _ledBright = v;
+    _prefs.putUChar(K_LEDBR, v);
     EventBus::publish(EventType::SETTINGS_CHANGED);
 }
