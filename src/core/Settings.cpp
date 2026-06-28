@@ -16,6 +16,7 @@ static const char* K_DARK   = "dark";
 static const char* K_EXPERT = "expert";
 static const char* K_FREQ   = "subghz_khz";
 static const char* K_SLEEP  = "sleep_sec";
+static const char* K_KBLAY  = "kb_layout";
 
 Settings& Settings::instance() {
     static Settings s;
@@ -34,6 +35,7 @@ void Settings::begin() {
     _expert     = _prefs.getBool(K_EXPERT, false);
     _subghzKhz  = _prefs.getUInt(K_FREQ,  433920);
     _sleepSec   = _prefs.getUShort(K_SLEEP, VARSYS_SLEEP_MS / 1000);
+    _kbLayout   = _prefs.getUChar(K_KBLAY, 0);   // 0 = US
 
     LOGI(TAG, "Loaded: bright=%u rot=%u lang=%s sound=%d freq=%lukHz",
          _brightness, _rotation, _lang == Lang::EN ? "EN" : "RU",
@@ -116,5 +118,12 @@ void Settings::setScreenTimeoutSec(uint16_t sec) {
     if (sec == _sleepSec) return;
     _sleepSec = sec;
     _prefs.putUShort(K_SLEEP, sec);
+    EventBus::publish(EventType::SETTINGS_CHANGED);
+}
+
+void Settings::setBadusbLayout(uint8_t v) {
+    if (v == _kbLayout) return;
+    _kbLayout = v;
+    _prefs.putUChar(K_KBLAY, v);
     EventBus::publish(EventType::SETTINGS_CHANGED);
 }

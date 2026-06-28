@@ -53,6 +53,10 @@ public:
     uint16_t screenTimeoutSec() const { return _sleepSec; }
     void     setScreenTimeoutSec(uint16_t sec);
 
+    // Раскладка клавиатуры BadUSB (0 = US, 1 = DE).
+    uint8_t  badusbLayout() const { return _kbLayout; }
+    void     setBadusbLayout(uint8_t v);
+
     void     factoryReset();           // очистить NVS и перезагрузиться
 
 private:
@@ -71,4 +75,5 @@ private:
     bool     _expert;
     uint32_t _subghzKhz;
     uint16_t _sleepSec;
+    uint8_t  _kbLayout;
 };

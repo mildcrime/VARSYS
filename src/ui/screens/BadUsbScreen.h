@@ -1,7 +1,8 @@
 // ============================================================================
-//  BadUsbScreen.h — BadUSB (USB-HID), ландшафт 320×170
+//  BadUsbScreen.h — BadUSB (USB-HID): раскладка, демо, скрипты /ducky (320×170)
 // ============================================================================
 #pragma once
+#include <vector>
 #include "ui/Screen.h"
 
 class BadUsbScreen : public Screen {
@@ -12,6 +13,16 @@ public:
     void onEvent(const Event& e) override;
 
 private:
-    lv_obj_t* _row    = nullptr;
+    enum Kind { K_LAYOUT, K_DEMO, K_SCRIPT };
+    struct Item { Kind kind; String name; lv_obj_t* row; lv_obj_t* val; };
+
+    void rebuild();
+    void select(int idx, bool on);
+    void moveSelection(int delta);
+    void activateSelected();
+
+    lv_obj_t* _list   = nullptr;
     lv_obj_t* _status = nullptr;
+    std::vector<Item> _items;
+    int _selected = 0;
 };

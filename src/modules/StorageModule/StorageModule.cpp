@@ -53,6 +53,24 @@ bool StorageModule::exists(const String& path) {
     return _fs->exists(path);
 }
 
+std::vector<String> StorageModule::listDir(const String& dir, const char* ext) {
+    std::vector<String> names;
+    if (!_fs) return names;
+    hal::SpiBusGuard guard;
+
+    File d = _fs->open(dir);
+    if (!d || !d.isDirectory()) return names;
+    for (File e = d.openNextFile(); e; e = d.openNextFile()) {
+        String n = e.name();
+        int slash = n.lastIndexOf('/');
+        if (slash >= 0) n = n.substring(slash + 1);
+        if (!ext || n.endsWith(ext)) names.push_back(n);
+        e.close();
+    }
+    d.close();
+    return names;
+}
+
 bool StorageModule::saveSignal(const SignalRecord& rec) {
     if (!_fs) return false;
     hal::SpiBusGuard guard;

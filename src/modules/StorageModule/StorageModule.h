@@ -39,6 +39,8 @@ public:
     // шине обёрнут SpiBusGuard. Для CSV-логов (wardriving и т.п.).
     bool appendLine(const String& path, const String& line);
     bool exists(const String& path);
+    // Список имён файлов в каталоге (опц. фильтр по расширению, напр. ".txt").
+    std::vector<String> listDir(const String& dir, const char* ext = nullptr);
 
     // --- Библиотека сигналов ---
     bool saveSignal(const SignalRecord& rec);
