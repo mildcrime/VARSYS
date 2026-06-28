@@ -77,13 +77,16 @@ monitor exposes the CLI — type `help`.
 Full guides: **[USAGE (EN)](docs/USAGE_EN.md)** · [USAGE (RU)](docs/USAGE_RU.md).
 Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Quick examples:
-- **Open a gate (bruteforce):** Sub‑GHz → set frequency → *Bruteforce* → pick
-  protocol (or *All*) → *Start*. When the gate opens, press **back** — the recent
-  codes are saved to `/brute/*.txt`. Run *Candidates* to auto‑replay and confirm
-  the exact code (saved to `/brute/confirmed_*.sub`).
-- **Capture & replay a remote:** Sub‑GHz → *Record* → *Replay* / *Save*.
-- **Read an NFC tag:** NFC → *Read* → *Save*.
+Quick examples (use only on hardware you own or are authorized to test):
+- **Audit a fixed‑code receiver you own (bruteforce):** put your own gate/barrier
+  receiver into test mode, then Sub‑GHz → set frequency → *Bruteforce* → pick
+  protocol (or *All*) → *Start*. When your receiver responds, press **back** — the
+  recent codes are saved to `/brute/*.txt`. Run *Candidates* to auto‑replay and
+  confirm which code your receiver accepts (saved to `/brute/confirmed_*.sub`).
+  This demonstrates why fixed‑code receivers are insecure and should be replaced
+  with rolling‑code ones.
+- **Capture & replay your own remote:** Sub‑GHz → *Record* → *Replay* / *Save*.
+- **Read your own NFC tag:** NFC → *Read* → *Save*.
 
 ## Project structure
 

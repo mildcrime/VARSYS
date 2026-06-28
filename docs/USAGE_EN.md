@@ -27,16 +27,22 @@ is the actions (scroll with the encoder):
 - **Spectrum** — live RSSI sweep around the current frequency.
 - **Bruteforce** — opens the brute screen (see below).
 
-### Bruteforce (gates / fixed‑code barriers)
+### Bruteforce (auditing a fixed‑code receiver you own)
 
-1. Set the gate frequency in Sub‑GHz first (usually 433.92 or 315 MHz).
+> Use this only against a receiver you own or are explicitly authorized to test —
+> e.g. your own gate/barrier controller put into a test setup. The goal is to
+> demonstrate that fixed‑code receivers are insecure, not to access anyone's
+> property. See [DISCLAIMER](../DISCLAIMER.md).
+
+1. Set your receiver's frequency in Sub‑GHz first (usually 433.92 or 315 MHz).
 2. Sub‑GHz → **Bruteforce**. Choose **Protocol** (Came / Nice / Ansonic /
    Holtek / Linear / Chamberlain, or **All**) and **Repeats** (2–3).
-3. **Start.** It sends full frames per code. When the gate opens, press **back** —
-   the last ~48 codes are saved as candidates to `/brute/found_*.txt`.
+3. **Start.** It sends full frames per code. When your receiver under test
+   responds, press **back** — the last ~48 codes are saved as candidates to
+   `/brute/found_*.txt`.
 4. **Candidates** — auto‑replays the saved window one by one with a pause and a
-   live index. When the gate opens again, press **back**: the exact confirmed
-   code is saved to `/brute/confirmed_*.sub`.
+   live index. When your receiver responds again, press **back**: the exact
+   confirmed code is saved to `/brute/confirmed_*.sub`.
 
 ## 3. Infrared
 
