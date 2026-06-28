@@ -94,7 +94,7 @@ void WifiScreen::onShow() {
 
 void WifiScreen::onHide() {
     if (_task) { Scheduler::instance().cancel(_task); _task = 0; }
-    WifiModule::instance().stopDeauth();
+    WifiModule::instance().radioOff();   // выключаем радио (экономия энергии)
 }
 
 void WifiScreen::moveSelection(int delta) {

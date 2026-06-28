@@ -25,6 +25,9 @@ public:
     int scan(uint32_t seconds = 4);
     const std::vector<BleDev>& devices() const { return _devs; }
 
+    void ensureReady();                      // лениво поднять контроллер BLE
+    void radioOff();                         // выключить радио (экономия)
+
 private:
     static BleModule* _self;
     std::vector<BleDev> _devs;

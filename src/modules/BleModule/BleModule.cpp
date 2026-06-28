@@ -8,14 +8,27 @@ BleModule* BleModule::_self = nullptr;
 
 bool BleModule::init() {
     _self = this;
-    NimBLEDevice::init("");
-    _ready = true;
-    LOGI(TAG, "BLE ready");
+    // Контроллер BLE НЕ поднимаем при старте (экономия энергии). Инициализация
+    // лениво в scan(), освобождение radioOff() при выходе с экрана.
+    _ready = false;
+    LOGI(TAG, "BLE ready (radio off)");
     return true;
 }
 
+void BleModule::ensureReady() {
+    if (_ready) return;
+    NimBLEDevice::init("");
+    _ready = true;
+}
+
+void BleModule::radioOff() {
+    if (!_ready) return;
+    NimBLEDevice::deinit(true);   // освобождает контроллер и память BLE
+    _ready = false;
+}
+
 int BleModule::scan(uint32_t seconds) {
-    if (!_ready) return 0;
+    ensureReady();
     _devs.clear();
 
     NimBLEScan* scan = NimBLEDevice::getScan();

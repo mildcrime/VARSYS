@@ -40,4 +40,5 @@ private:
     uint32_t _lastActivity = 0;
     bool     _dimmed   = false;
     bool     _screenOff = false;
+    bool     _lowPower = false;   // CPU понижен до VARSYS_CPU_MHZ_IDLE
 };

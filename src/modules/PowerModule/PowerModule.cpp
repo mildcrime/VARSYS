@@ -80,6 +80,11 @@ void PowerModule::noteActivity() {
 
 void PowerModule::wake() {
     bool wasOff = _screenOff;
+    // Возвращаем полную частоту CPU перед перерисовкой интерфейса.
+    if (_lowPower) {
+        setCpuFrequencyMhz(VARSYS_CPU_MHZ_NORMAL);
+        _lowPower = false;
+    }
     UIManager::instance().display().setBrightness(Settings::instance().brightness());
     _dimmed = false;
     _screenOff = false;
@@ -93,7 +98,11 @@ void PowerModule::update(uint32_t now) {
     if (!_screenOff && idle > VARSYS_SLEEP_MS) {
         UIManager::instance().display().setBrightness(0);
         _screenOff = true;
-        LOGD(TAG, "Screen off (idle)");
+        // Экран погашен и пользователь ушёл — роняем частоту CPU (экран не
+        // рисуется, активной работы нет). Возврат в wake() по любому вводу.
+        setCpuFrequencyMhz(VARSYS_CPU_MHZ_IDLE);
+        _lowPower = true;
+        LOGD(TAG, "Screen off + CPU %dMHz (idle)", VARSYS_CPU_MHZ_IDLE);
     } else if (!_dimmed && idle > VARSYS_DIM_MS) {
         UIManager::instance().display().setBrightness(VARSYS_DIM_BRIGHTNESS);
         _dimmed = true;

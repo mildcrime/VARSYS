@@ -41,7 +41,7 @@ void WebUiModule::stop() {
     if (!_active) return;
     _server.stop();
     WiFi.softAPdisconnect(true);
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_OFF);   // гасим радио после остановки (экономия)
     _active = false;
     LOGI(TAG, "WebUI down");
 }

@@ -122,4 +122,7 @@ void Core::loop() {
         Scheduler::instance().update(now);   // таймеры
         _modules.updateAll(now);
     }
+    // Уступаем CPU планировщику FreeRTOS между тиками — цикл не молотит
+    // вхолостую (резко снижает энергопотребление, кормит watchdog).
+    delay(1);
 }

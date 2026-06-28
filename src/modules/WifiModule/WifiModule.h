@@ -29,6 +29,8 @@ public:
     int scan();                              // блокирующий, заполняет _aps
     const std::vector<ApInfo>& aps() const { return _aps; }
 
+    void radioOff();                         // выключить радио (экономия)
+
     void startDeauth(int apIndex);
     void stopDeauth();
     bool deauthing() const { return _deauthActive; }

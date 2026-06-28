@@ -37,7 +37,7 @@ void EvilPortalModule::stop() {
     _dns.stop();
     _server.stop();
     WiFi.softAPdisconnect(true);
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_OFF);   // гасим радио после остановки (экономия)
     _active = false;
     LOGI(TAG, "portal down (captured %d)", _captured);
 }

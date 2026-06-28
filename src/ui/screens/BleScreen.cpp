@@ -82,6 +82,10 @@ void BleScreen::onShow() {
     lv_label_set_text_fmt(_status, "%u dev", (unsigned)_rows.size());
 }
 
+void BleScreen::onHide() {
+    BleModule::instance().radioOff();   // выключаем контроллер BLE (экономия)
+}
+
 void BleScreen::moveSelection(int delta) {
     if (_rows.empty()) return;
     select(_selected, false);

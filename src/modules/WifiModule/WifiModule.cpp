@@ -39,10 +39,17 @@ static void snifferCb(void* buf, wifi_promiscuous_pkt_type_t type) {
 
 bool WifiModule::init() {
     _self = this;
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    LOGI(TAG, "WiFi ready");
+    // Радио НЕ включаем при старте (экономия энергии). Поднимается лениво в
+    // scan()/startDeauth(), гасится radioOff() при выходе с экрана.
+    WiFi.mode(WIFI_OFF);
+    LOGI(TAG, "WiFi ready (radio off)");
     return true;
+}
+
+void WifiModule::radioOff() {
+    stopDeauth();
+    stopSniffer();
+    WiFi.mode(WIFI_OFF);
 }
 
 int WifiModule::scan() {
