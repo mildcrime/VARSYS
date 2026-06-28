@@ -34,6 +34,7 @@ lv_obj_t* FmScreen::makeAction(lv_obj_t* parent, int idx, const char* sym,
 
 void FmScreen::onCreate(lv_obj_t* parent) {
     _root = parent;
+    _hwPanel = nullptr;   // старый объект удалён lv_obj_clean при пересборке
     styleScreen(_root);
     header(_root, "FM");
 

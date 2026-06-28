@@ -37,6 +37,7 @@ lv_obj_t* NfcScreen::makeAction(lv_obj_t* parent, int idx, const char* sym,
 
 void NfcScreen::onCreate(lv_obj_t* parent) {
     _root = parent;
+    _hwPanel = nullptr;   // старый объект удалён lv_obj_clean при пересборке
     styleScreen(_root);
     header(_root, "NFC");
 

@@ -144,7 +144,7 @@ bool NfcModule::saveDump(const ClassicDump& d, String& pathOut) {
         line[n] = 0; body += line; body += "\n";
     }
 
-    if (!st.fs()->exists("/nfc")) { hal::SpiBusGuard g; st.fs()->mkdir("/nfc"); }
+    if (!st.exists("/nfc")) { hal::SpiBusGuard g; st.fs()->mkdir("/nfc"); }
     pathOut = String("/nfc/") + uid + ".dump";
     return st.writeFile(pathOut, body);
 }

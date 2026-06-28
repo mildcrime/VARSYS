@@ -8,6 +8,7 @@ using namespace ui;
 
 void MousejackScreen::onCreate(lv_obj_t* parent) {
     _root = parent;
+    _hwPanel = nullptr;   // старый объект удалён lv_obj_clean при пересборке
     styleScreen(_root);
     header(_root, "Mousejack");
 
