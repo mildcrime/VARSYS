@@ -28,6 +28,7 @@
 #include "ui/screens/FmScreen.h"
 #include "ui/screens/DevToolsScreen.h"
 #include "ui/screens/BruteScreen.h"
+#include "ui/screens/FilesScreen.h"
 
 static const char* TAG = "UI";
 
@@ -122,6 +123,7 @@ void UIManager::buildScreens() {
     addScreen(new FmScreen());
     addScreen(new DevToolsScreen());
     addScreen(new BruteScreen());
+    addScreen(new FilesScreen());
 }
 
 void UIManager::addScreen(Screen* screen) {

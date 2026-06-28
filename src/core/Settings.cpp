@@ -26,7 +26,7 @@ void Settings::begin() {
 
     _brightness = _prefs.getUChar(K_BRIGHT, VARSYS_UI_BRIGHTNESS);
     _rotation   = _prefs.getUChar(K_ROT,    VARSYS_UI_ROTATION);
-    _lang       = (Lang)_prefs.getUChar(K_LANG, (uint8_t)Lang::RU);
+    _lang       = (Lang)_prefs.getUChar(K_LANG, (uint8_t)Lang::EN);   // по умолчанию English
     _sound      = _prefs.getBool(K_SOUND, true);
     _vibro      = _prefs.getBool(K_VIBRO, false);
     _dark       = _prefs.getBool(K_DARK,  false);

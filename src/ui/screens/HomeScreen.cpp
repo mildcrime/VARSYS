@@ -60,7 +60,7 @@ void HomeScreen::onCreate(lv_obj_t* parent) {
     addTile(ICON_SIGNAL,    lv_color_hex(0xFF375F), "FM",             "Fm");
     addTile(ICON_RECORD,    lv_color_hex(0xBF5AF2), "BadUSB",         "Badusb");
     addTile(ICON_LANGUAGE,  lv_color_hex(0x64D2FF), "WebUI",          "WebUi");
-    addTile(ICON_FOLDER,    lv_color_hex(0x30D158), tr(STR_FILES),    nullptr);
+    addTile(ICON_FOLDER,    lv_color_hex(0x30D158), tr(STR_FILES),    "Files");
     addTile(ICON_SETTINGS,  lv_color_hex(0x8E8E93), tr(STR_SETTINGS), "Settings");
     if (Settings::instance().expert())
         addTile(ICON_EXPERT, lv_color_hex(0xFF453A), tr(STR_EXPERT),  "Expert");
