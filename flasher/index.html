@@ -111,10 +111,46 @@
     <!-- Step 3: flash mode -->
     <div class="panel" id="p3">
       <h2>3 · Режим прошивки · Flashing mode</h2>
-      <p class="muted" style="font-size:13px;margin:0 0 6px;">
+      <p class="muted" style="font-size:13px;margin:0 0 10px;">
         Чаще всего <b>автоматически</b>: просто нажмите Install. Если не подключается —
         переведите вручную в режим загрузки:
       </p>
+
+      <svg viewBox="0 0 480 196" width="100%" role="img" aria-label="Схема: зажать BOOT, нажать RESET, отпустить BOOT" style="background:#0e1722;border-radius:12px;">
+        <!-- board -->
+        <rect x="20" y="20" width="118" height="156" rx="14" fill="#16202c" stroke="#2c3a4d"/>
+        <rect x="33" y="33" width="92" height="64" rx="9" fill="#0a3a66" stroke="#0a84ff"/>
+        <text x="79" y="69" font-size="11" fill="#9fd0ff" text-anchor="middle" font-family="sans-serif">320×170</text>
+        <circle cx="79" cy="128" r="19" fill="#1c2733" stroke="#2c3a4d"/>
+        <circle cx="79" cy="128" r="6" fill="#2c3a4d"/>
+        <rect x="65" y="170" width="28" height="9" rx="3" fill="#3a4a5d"/>
+        <text x="79" y="190" font-size="9" fill="#8e8e93" text-anchor="middle" font-family="sans-serif">USB‑C</text>
+        <!-- buttons -->
+        <rect x="30" y="104" width="20" height="13" rx="3" fill="#ff9f0a"/>
+        <rect x="108" y="104" width="20" height="13" rx="3" fill="#0a84ff"/>
+        <text x="40" y="100" font-size="9" fill="#ff9f0a" text-anchor="middle" font-family="sans-serif">BOOT</text>
+        <text x="118" y="100" font-size="9" fill="#64d2ff" text-anchor="middle" font-family="sans-serif">RESET</text>
+
+        <!-- sequence timeline -->
+        <text x="170" y="34" font-size="11" fill="#c7c7cc" font-family="sans-serif">Последовательность · Sequence</text>
+        <!-- BOOT row -->
+        <text x="170" y="74" font-size="11" fill="#ff9f0a" font-family="sans-serif">BOOT</text>
+        <rect x="215" y="64" width="235" height="14" rx="7" fill="#ff9f0a" opacity="0.85"/>
+        <text x="332" y="74" font-size="10" fill="#3a2400" text-anchor="middle" font-family="sans-serif">удерживать · hold</text>
+        <!-- RESET row -->
+        <text x="170" y="108" font-size="11" fill="#64d2ff" font-family="sans-serif">RESET</text>
+        <rect x="300" y="98" width="16" height="14" rx="4" fill="#0a84ff"/>
+        <text x="308" y="128" font-size="9" fill="#8e8e93" text-anchor="middle" font-family="sans-serif">tap</text>
+        <!-- steps -->
+        <text x="222" y="150" font-size="10" fill="#8e8e93" font-family="sans-serif">① держать BOOT</text>
+        <text x="300" y="168" font-size="10" fill="#8e8e93" font-family="sans-serif">② нажать RESET</text>
+        <text x="372" y="150" font-size="10" fill="#8e8e93" font-family="sans-serif">③ отпустить BOOT</text>
+      </svg>
+      <p class="muted" style="font-size:11px;margin:6px 0 4px;text-align:center;">
+        Схема условна — расположение кнопок зависит от ревизии платы.
+        · Schematic — exact button placement may vary by board revision.
+      </p>
+
       <ol>
         <li>Зажмите и держите <kbd>BOOT</kbd> (кнопка GPIO0). · Hold <kbd>BOOT</kbd>.</li>
         <li>Коротко нажмите <kbd>RESET</kbd> (EN) и отпустите. · Tap <kbd>RESET</kbd>.</li>
