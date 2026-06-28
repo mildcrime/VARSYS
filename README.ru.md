@@ -46,7 +46,14 @@ RGB WS2812 ×8, динамик NS4168, топливомер BQ27220.
 > [`src/hal/board_pins.h`](src/hal/board_pins.h). Внешние модули
 > (NRF24, GPS, FM, iButton) подключаются к порту QWIIC/UART.
 
-## Сборка и прошивка
+## Прошивка прямо из браузера (без установки)
+
+Откройте **<https://mildcrime.github.io/VARSYS/flasher/>** в **Chrome или Edge**,
+подключите устройство по USB, нажмите **Install**. Работает на Windows / macOS /
+Linux. Или двойной клик по ярлыку из [`flasher/`](flasher/). Подробности:
+[flasher/README.md](flasher/README.md).
+
+## Сборка и прошивка (из исходников)
 
 Нужен [PlatformIO](https://platformio.org/).
 

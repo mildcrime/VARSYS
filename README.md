@@ -46,7 +46,14 @@ WS2812 RGB ×8, NS4168 speaker, BQ27220 fuel gauge.
 > [`src/hal/board_pins.h`](src/hal/board_pins.h). External modules
 > (NRF24, GPS, FM, iButton) attach to the QWIIC/serial port.
 
-## Build & flash
+## Flash from your browser (no install)
+
+Open **<https://mildcrime.github.io/VARSYS/flasher/>** in **Chrome or Edge**,
+connect the device via USB, click **Install**. Works on Windows / macOS / Linux.
+Or double‑click a shortcut from [`flasher/`](flasher/). Details:
+[flasher/README.md](flasher/README.md).
+
+## Build & flash (from source)
 
 Requires [PlatformIO](https://platformio.org/).
 
