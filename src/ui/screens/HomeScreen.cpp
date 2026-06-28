@@ -92,7 +92,9 @@ void HomeScreen::applyFocus() {
         int d = c > viewC ? c - viewC : viewC - c;
         int nd = d > 150 ? 150 : d;
         int f = 150 - nd;                              // 0..150 (150 в центре)
-        lv_obj_set_style_transform_zoom(_tiles[i].icon, 256 + f * 110 / 150, 0);
+        // Фокус через прозрачность (без transform_zoom: в LVGL 8 наиболее
+        // увеличенная центральная плитка рендерилась в промежуточный буфер
+        // и не выводилась -> пустой центр на железе).
         lv_obj_set_style_opa(_tiles[i].icon, (lv_opa_t)(110 + f * 145 / 150), 0);
         if (d < bestD) { bestD = d; best = i; }
     }

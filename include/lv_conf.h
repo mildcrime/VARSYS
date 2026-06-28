@@ -37,6 +37,10 @@
 #define LV_FONT_CUSTOM_DECLARE  LV_FONT_DECLARE(varsys_14)
 #define LV_FONT_DEFAULT         &varsys_14
 
+// Шрифты varsys_* сгенерированы со сжатием глифов (bitmap_format=1).
+// Без этого LVGL не декодирует битмапы -> текст/иконки не рисуются.
+#define LV_USE_FONT_COMPRESSED  1
+
 // --- Виджеты (минимально необходимый набор для этапа 1) ---
 #define LV_USE_LABEL    1
 #define LV_USE_BTN      1
