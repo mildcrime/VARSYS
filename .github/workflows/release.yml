@@ -1,0 +1,70 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main            # обновляем прошивальщик на main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: pio-${{ runner.os }}-
+
+      - name: Install PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Build firmware
+        run: pio run -e t-embed-cc1101
+
+      - name: Collect binaries into flasher/
+        run: |
+          B=.pio/build/t-embed-cc1101
+          cp "$B/bootloader.bin" "$B/partitions.bin" "$B/firmware.bin" flasher/
+          find ~/.platformio/packages/framework-arduinoespressif32* \
+            -name boot_app0.bin -exec cp {} flasher/ \;
+          ls -l flasher/*.bin
+
+      - name: Commit updated flasher binaries to main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add flasher/*.bin
+          if git diff --cached --quiet; then
+            echo "no binary changes"
+          else
+            git commit -m "ci: update flasher binaries (${{ github.ref_name }})"
+            git push origin HEAD:main
+          fi
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: VARSYS ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            flasher/firmware.bin
+            flasher/bootloader.bin
+            flasher/partitions.bin
+            flasher/boot_app0.bin
+            flasher/manifest.json

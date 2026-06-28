@@ -8,7 +8,7 @@ a Flipper‑class multitool with a clean, phone‑like UI.
 > ⚠️ For **authorized testing and education only**. Read the
 > [Disclaimer](DISCLAIMER.md) before use.
 
-![status](https://img.shields.io/badge/build-passing-brightgreen)
+[![build](https://github.com/mildcrime/VARSYS/actions/workflows/ci.yml/badge.svg)](https://github.com/mildcrime/VARSYS/actions/workflows/ci.yml)
 ![platform](https://img.shields.io/badge/platform-ESP32--S3-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
