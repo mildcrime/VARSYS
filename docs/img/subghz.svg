@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 170" width="640" height="340" font-family="-apple-system, Segoe UI, Inter, sans-serif">
+  <rect width="320" height="170" rx="10" fill="#000000"/>
+  <!-- header: < Menu .. title .. time -->
+  <text x="10" y="20" fill="#0a84ff" font-size="12">‹ Menu</text>
+  <text x="160" y="20" fill="#ffffff" font-size="13" text-anchor="middle" font-weight="600">Sub-GHz</text>
+  <text x="298" y="20" fill="#8e8e93" font-size="11" text-anchor="end">9:41</text>
+  <!-- left card: state -->
+  <rect x="10" y="32" width="142" height="128" rx="14" fill="#1c1c1e"/>
+  <text x="81" y="58" fill="#8e8e93" font-size="11" text-anchor="middle">FREQUENCY</text>
+  <text x="81" y="92" fill="#ffffff" font-size="26" text-anchor="middle" font-weight="600">433.92</text>
+  <text x="81" y="110" fill="#8e8e93" font-size="11" text-anchor="middle">MHz</text>
+  <text x="81" y="140" fill="#30d158" font-size="13" text-anchor="middle">RSSI −72 dBm</text>
+  <!-- right card: action list -->
+  <rect x="168" y="32" width="142" height="128" rx="14" fill="#1c1c1e"/>
+  <g font-size="13" fill="#ffffff">
+    <rect x="172" y="36" width="134" height="26" rx="8" fill="#0a3a66"/>
+    <text x="186" y="53">◦ Scan</text>
+    <text x="186" y="79">● Record</text>
+    <text x="186" y="105">▷ Replay</text>
+    <text x="186" y="131">⤓ Save</text>
+    <text x="186" y="156" fill="#8e8e93">▦ Library</text>
+  </g>
+  <text x="160" y="168" fill="#48484a" font-size="8" text-anchor="middle">схематичный макет · schematic mockup (feature screen: header + state + actions)</text>
+</svg>

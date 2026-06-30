@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 170" width="640" height="340" font-family="-apple-system, Segoe UI, Inter, sans-serif">
+  <rect width="320" height="170" rx="10" fill="#000000"/>
+  <text x="10" y="20" fill="#0a84ff" font-size="12">‹ Menu</text>
+  <text x="160" y="20" fill="#ffffff" font-size="13" text-anchor="middle" font-weight="600">Settings</text>
+  <!-- left column: toggles -->
+  <rect x="10" y="30" width="142" height="132" rx="14" fill="#1c1c1e"/>
+  <g font-size="12" fill="#ffffff">
+    <text x="38" y="50">Sound</text>
+    <rect x="118" y="42" width="26" height="14" rx="7" fill="#30d158"/><circle cx="137" cy="49" r="5.5" fill="#fff"/>
+    <text x="38" y="74">Vibration</text>
+    <rect x="118" y="66" width="26" height="14" rx="7" fill="#3a3a3c"/><circle cx="125" cy="73" r="5.5" fill="#fff"/>
+    <text x="38" y="98">Dark</text>
+    <rect x="118" y="90" width="26" height="14" rx="7" fill="#30d158"/><circle cx="137" cy="97" r="5.5" fill="#fff"/>
+    <text x="38" y="122">LED</text>
+    <rect x="118" y="114" width="26" height="14" rx="7" fill="#30d158"/><circle cx="137" cy="121" r="5.5" fill="#fff"/>
+  </g>
+  <!-- right column: values -->
+  <rect x="168" y="30" width="142" height="132" rx="14" fill="#1c1c1e"/>
+  <g font-size="12" fill="#ffffff">
+    <text x="196" y="50">Brightness</text><text x="300" y="50" fill="#0a84ff" text-anchor="end">80%</text>
+    <text x="196" y="74">Screen off</text><text x="300" y="74" fill="#0a84ff" text-anchor="end">60s</text>
+    <text x="196" y="98">Language</text><text x="300" y="98" fill="#0a84ff" text-anchor="end">EN</text>
+    <text x="196" y="122">Battery</text><text x="300" y="122" fill="#0a84ff" text-anchor="end">›</text>
+  </g>
+  <text x="160" y="169" fill="#48484a" font-size="8" text-anchor="middle">схематичный макет · schematic mockup (SettingsScreen)</text>
+</svg>

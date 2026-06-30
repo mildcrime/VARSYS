@@ -1,227 +1,126 @@
-# VARSYS — Архитектура
+# VARSYS — Architecture
 
-Прошивка для **LILYGO T-Embed CC1101 Plus S3** (ESP32-S3). Это карта того, как
-устроена кодовая база, чтобы быстро войти и спокойно дорабатывать.
+🌐 **English** · [Русский](ARCHITECTURE.ru.md)
 
-> Документация (этот комплект):
-> - **ARCHITECTURE.md** — ядро, модель исполнения, потоки данных (этот файл)
-> - [MODULES.md](MODULES.md) — каталог модулей и их публичные API
-> - [UI.md](UI.md) — UI-фреймворк (LVGL), экраны, темы, локализация
-> - [ALGORITHMS.md](ALGORITHMS.md) — ключевые алгоритмы (OOK, brute, RMT, NFC, энкодер…)
-> - [HARDWARE.md](HARDWARE.md) — распиновка, общие ресурсы, сборка/прошивка, грабли
-> - [EXTENDING.md](EXTENDING.md) — рецепты: добавить модуль/экран/плитку/строку/CLI
-> - [../BACKLOG.md](../BACKLOG.md) — известные проблемы и задачи
+Firmware for the **LILYGO T-Embed CC1101 Plus S3** (ESP32-S3). This is the map of
+how the codebase is structured, so you can onboard fast and extend it safely.
+
+> Docs: **ARCHITECTURE** · [MODULES](MODULES.md) · [UI](UI.md) ·
+> [ALGORITHMS](ALGORITHMS.md) · [HARDWARE](HARDWARE.md) ·
+> [EXTENDING](EXTENDING.md) · [BACKLOG](../BACKLOG.md)
 
 ---
 
-## 1. Слои
+## 1. Layers
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  Экраны (Screen)         HomeScreen, SubGhzScreen, NfcScreen…  │  UI
+│  Screens (Screen)        HomeScreen, SubGhzScreen, NfcScreen…  │  UI
 ├──────────────────────────────────────────────────────────────┤
-│  UIManager + UITheme + i18n + Notify + Splash + StatusOverlay  │  UI-фреймворк
+│  UIManager + UITheme + i18n + Notify + Splash + StatusOverlay  │  UI framework
 ├──────────────────────────────────────────────────────────────┤
-│  Модули (IModule)        Radio, Ir, Nfc, Wifi, Ble, Power…     │  бизнес-логика
+│  Modules (IModule)       Radio, Ir, Nfc, Wifi, Ble, Power…     │  business logic
 ├──────────────────────────────────────────────────────────────┤
-│  Ядро  Core · ModuleManager · EventBus · Scheduler · Settings  │  оркестрация
+│  Core  Core · ModuleManager · EventBus · Scheduler · Settings  │  orchestration
 │        Clock · Logger · SpiBus                                  │
 ├──────────────────────────────────────────────────────────────┤
-│  HAL   Display(TFT_eSPI) · CC1101 · InfraRed · board_pins      │  железо
+│  HAL   Display(TFT_eSPI) · CC1101 · InfraRed · board_pins      │  hardware
 ├──────────────────────────────────────────────────────────────┤
-│  Arduino-ESP32 · LVGL 8.3 · TFT_eSPI · NimBLE · RF24 · …       │  платформа
+│  Arduino-ESP32 · LVGL 8.3 · TFT_eSPI · NimBLE · RF24 · …       │  platform
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Зависимости направлены **вниз**: экраны зовут модули, модули — ядро/HAL.
-Развязка «вбок» — через `EventBus` (модули не держат ссылок друг на друга),
-а редкий прямой доступ — через синглтоны `Module::instance()`.
+Dependencies point **down**: screens call modules, modules call core/HAL.
+Sideways decoupling is via `EventBus`; rare direct access via `Module::instance()`.
 
----
+## 2. Core entities (`src/core/`)
 
-## 2. Ключевые сущности ядра (`src/core/`)
+**Core** — singleton orchestrator. `begin()`: Logger → `hal::spiBusInit()` →
+`Clock::begin()` → `Settings::begin()` → `registerModules()` → `initAll()` →
+`startAll()` → publish `SYS_BOOT_DONE`. `loop()` every `VARSYS_TICK_MS` (5 ms):
+`dispatchDeferred()` → `Scheduler::update()` → `updateAll()`, then `delay(1)`
+(yields CPU to FreeRTOS idle — power saving, feeds the WDT).
 
-### Core (`Core.*`)
-Синглтон-оркестратор. `main.cpp` лишь делегирует:
-```cpp
-void setup() { Core::instance().begin(); }
-void loop()  { Core::instance().loop();  }
-```
-- `begin()`: Logger → `hal::spiBusInit()` → `Clock::begin()` → `Settings::begin()`
-  → `registerModules()` → `ModuleManager::initAll()` → `startAll()` →
-  publish `SYS_BOOT_DONE`.
-- `loop()`: раз в `VARSYS_TICK_MS` (5 мс) — `EventBus::dispatchDeferred()` →
-  `Scheduler::update()` → `ModuleManager::updateAll()`. В конце `delay(1)` —
-  уступает CPU FreeRTOS-idle (энергосбережение, кормит WDT).
+**IModule** (`Module.h`) — subsystem contract: `name/init/start/update/stop` +
+`enabled`. ⚠️ **Do not name feature methods `start()/stop()`** — those are the
+lifecycle and `startAll()` calls them at boot (caused an auto-start bug). Use
+`activate()/deactivate()`.
 
-### IModule (`Module.h`)
-Контракт любой подсистемы:
-```cpp
-const char* name();          // тег логов / поиск
-bool init();                 // однократно, false = фатально
-void start();                // после initAll() всех модулей
-void update(uint32_t now);   // каждый тик (now = millis())
-void stop();                 // корректное завершение
-bool enabled;                // участвует ли в updateAll
-```
-⚠️ **Не называйте фича-методы `start()`/`stop()`** — они переопределят lifecycle
-и `startAll()` их вызовет при загрузке (был баг: WebUI/Wardrive автозапускались).
-Используйте `activate()/deactivate()` (см. [MODULES.md](MODULES.md)).
+**ModuleManager** — module list, lifecycle, `find(name)`. **Registration order =
+init/update order** (see §4).
 
-### ModuleManager (`ModuleManager.*`)
-Хранит список модулей, гоняет lifecycle (`initAll/startAll/updateAll`),
-`find(name)` для редкого прямого доступа. **Порядок регистрации = порядок
-init/update** — критичен (см. §4).
+**EventBus** — pub/sub. `publish` is synchronous; `publishDeferred` queues and
+delivers at the start of the next tick — use it when a handler mutates the
+UI/subscriptions. ⚠️ Not thread-safe.
 
-### EventBus (`EventBus.*`)
-Pub/sub. `EventType` — перечисление (системные, ввод, питание, настройки…).
-- `publish(type, i32, ptr)` — **синхронно**, зовёт подписчиков немедленно.
-- `publishDeferred(...)` — в очередь, доставляется в начале следующего тика
-  (`dispatchDeferred`). Использовать, когда обработчик меняет UI/подписки
-  (напр. `LANG_CHANGED`, `UI_REBUILD`).
-- ⚠️ Не потокобезопасен (синхронная итерация вектора).
+**Scheduler** — cooperative timers `every/after/cancel` (callbacks run on the main
+loop — must not block).
 
-### Scheduler (`Scheduler.*`)
-Кооперативные таймеры (`every`/`after`/`cancel`), колбэки крутятся в главном
-цикле — **не блокируют, но и не вытесняют**. Возвращает `id` для отмены.
+**Settings** — NVS runtime config, loaded before modules; setters write NVS +
+publish `SETTINGS_CHANGED` (language/theme → `LANG_CHANGED`/`UI_REBUILD`).
 
-### Settings (`Settings.*`)
-Синглтон рантайм-конфига на NVS (`Preferences`). Грузится в `Core::begin()` до
-модулей. Каждый сеттер пишет в NVS и публикует `SETTINGS_CHANGED` (а смена
-языка/темы — `LANG_CHANGED`/`UI_REBUILD`). Поля: яркость, ориентация, язык,
-звук, вибро, тёмная тема, эксперт, частота Sub-GHz, таймаут экрана, раскладка
-BadUSB, вкл/яркость LED.
+**Clock / Logger / SpiBus** — time; `LOGI/W/E/D`; shared-SPI arbitration
+(`hal::SpiBusGuard`, recursive mutex — thread-safe, ready for future threads).
 
-### Clock / Logger / SpiBus
-- **Clock** — системное время до NTP (статус-бар).
-- **Logger** — `LOGI/LOGW/LOGE/LOGD(TAG, …)` в Serial. Уровень в `Core::begin`.
-- **SpiBus** — арбитраж общей шины: `hal::SpiBusGuard` (RAII) на **рекурсивном
-  мьютексе** (потокобезопасен — задел под многозадачность). Любой доступ к
-  дисплею/CC1101/SD/NRF24 — под гардом.
+## 3. Execution model
 
----
+**Cooperative, single-threaded.** One loop drives every module every 5 ms.
+- **A blocking op freezes the whole UI** (WiFi scan ~2s, CC1101 record ~3s). A
+  deliberate trade-off; candidate for FreeRTOS worker tasks — see BACKLOG.
+- LVGL is serviced in `UIManager::update()` (`lv_timer_handler`); tick is
+  `LV_TICK_CUSTOM` via `millis()`.
 
-## 3. Модель исполнения (важно понимать)
+⚠️ **Timing pitfall:** `now` is captured once at the start of the tick. If a
+handler later stored `millis()` as a timestamp, `now - saved` underflows on
+unsigned (caused a false screen-off bug). Always: `idle = (now>=last)?now-last:0;`
 
-**Кооперативная, однопоточная.** Один главный цикл (`loop()` в FreeRTOS-задаче
-`loopTask`) по очереди прокручивает все модули раз в 5 мс. Своих потоков мы не
-заводим (WiFi/BLE-стеки ESP-IDF — исключение, у них свои задачи).
-
-Следствия:
-- **Блокирующая операция морозит весь UI.** WiFi-скан (~2с), запись CC1101
-  (~3с), BLE-скан — на это время интерфейс замирает. Это осознанный компромисс
-  (простота vs отзывчивость). Кандидат на вынос в FreeRTOS-задачи — см.
-  [BACKLOG.md](../BACKLOG.md).
-- **LVGL обслуживается** в `UIManager::update()` (`lv_timer_handler` раз в
-  `VARSYS_LVGL_TICK_MS`); тик LVGL — `LV_TICK_CUSTOM` через `millis()`.
-
-⚠️ **Грабли времени:** `now` в `update(now)` фиксируется один раз в начале тика
-(`Core::loop`). Если обработчик события вызвал `millis()` позже и сохранил его
-как «время активности», то `now - saved` уходит в **underflow** (был баг ложного
-гашения экрана). Для вычитания времени всегда защищайтесь:
-`idle = (now >= last) ? now - last : 0;`
-
----
-
-## 4. Порядок инициализации (мина, на которой подрывались)
-
-`registerModules()` задаёт порядок. `initAll()` идёт по нему, `startAll()` — после.
+## 4. Init order (the mine we stepped on)
 
 ```
 Input, UI, Storage, Power, Radio, Ir, Nfc, Wifi, Ble, Badusb,
-Cli, WebUi, Led, Gps, Nrf, Audio, Portal, IButton, Fm, Wardrive   (20 модулей)
+Cli, WebUi, Led, Gps, Nrf, Audio, Portal, IButton, Fm, Wardrive   (20)
 ```
+- **Screens are built in `UIManager::start()`, not `init()`** — their `onCreate()`
+  touches other modules initialized after UI (else null-deref crash loop).
+- A module whose `init()` calls `OtherModule::instance()` must be registered AFTER it.
+- QWIIC modules (Gps/Nrf/IButton) **don't claim pins in `init()`** — lazy
+  `acquire/release` (see [HARDWARE](HARDWARE.md)).
 
-Правила:
-- **UI инициализируется рано** (поднимает дисплей/SPI), но **экраны строятся
-  не в `init()`, а в `UIManager::start()`** — их `onCreate()` обращается к
-  другим модулям (RadioModule и т.п.), которые инициализируются ПОЗЖE UI.
-  Строить экраны в init = null-дереф (был краш-цикл).
-- Модуль, чей `init()` зовёт `OtherModule::instance()`, должен быть
-  зарегистрирован ПОСЛЕ того модуля (Storage/Radio/Nrf используют
-  `UIManager::instance().display().spi()` — поэтому после UI).
-- Модули общего QWIIC-порта (Gps/Nrf/IButton) **не занимают пины в `init()`**
-  (иначе затирают друг друга) — ленивый `acquire()/release()` (см. [HARDWARE.md](HARDWARE.md)).
-
----
-
-## 5. Поток управления при старте
+## 5. Startup control flow
 
 ```
 setup() → Core::begin()
-  Logger::begin()
-  hal::spiBusInit()                 // мьютекс шины
-  Clock::begin(); Settings::begin() // NVS до модулей
-  registerModules()
-  ModuleManager::initAll()          // init() каждого по порядку
-    └ UIManager::init(): Display.begin() + lv_init + draw buffers + flush_cb
-  ModuleManager::startAll()
-    └ UIManager::start(): buildScreens() → setScreen("Home") → Splash::play()
-  publish(SYS_BOOT_DONE)            // LED-вспышка, статус-бар, аудио-бип(выкл)
-loop() → Core::loop() каждые 5 мс
-  dispatchDeferred() → Scheduler::update() → updateAll()
-    InputModule.update(): опрос энкодера/кнопок → publish INPUT_*
-    UIManager.update():   lv_timer_handler() → active screen onUpdate/flush
-    PowerModule.update():  таймауты экрана, опрос батареи
-    …остальные модули
-  delay(1)
+  Logger / spiBusInit / Clock / Settings / registerModules
+  initAll()  → UIManager::init(): Display + LVGL (buffers, flush_cb)
+  startAll() → UIManager::start(): buildScreens → setScreen("Home") → Splash
+  publish(SYS_BOOT_DONE)
+loop() every 5 ms: dispatchDeferred → Scheduler → updateAll → delay(1)
 ```
 
----
-
-## 6. Поток событий ввода
+## 6. Input event flow
 
 ```
-Энкодер/кнопки (GPIO)
-  → InputModule::update() (квадратурный декодер, антидребезг)
-  → EventBus::publish(INPUT_ENCODER_CW/CCW | BTN_CLICK | BTN_LONG | BACK)
-      ├→ PowerModule (noteActivity: сброс сна / пробуждение)
-      └→ UIManager (forward → активный Screen::onEvent)
-            └→ Screen реагирует (moveSelection / activate / push)
-INPUT_BACK / BTN_LONG → UIManager::popScreen() (централизованно)
+Encoder/buttons → InputModule (decoder + debounce) → publish INPUT_*
+   ├→ PowerModule (noteActivity: reset sleep / wake)
+   └→ UIManager → active Screen::onEvent
+INPUT_BACK / BTN_LONG → UIManager::popScreen()
 ```
 
----
+## 7. Display & shared SPI bus
+Display (ST7789) + CC1101 + SD share one SPI bus (9/10/11), differ only in CS.
+One `SPIClass` (TFT_eSPI); others use `Display::spi()`. Every transaction and the
+LVGL flush run under `hal::SpiBusGuard`. RMT/QWIIC details — [HARDWARE](HARDWARE.md).
 
-## 7. Дисплей и общая шина SPI
-
-Дисплей (ST7789), CC1101 и SD **на одной SPI-шине** (MOSI 9 / MISO 10 / SCK 11),
-различаются только CS. Модель — как в Bruce: один `SPIClass` от TFT_eSPI,
-остальные используют `Display::spi()` (= `tft.getSPIinstance()`). Каждая
-транзакция — под `hal::SpiBusGuard`. LVGL flush тоже под гардом
-(`UIManager::flushCb`). Подробности и RMT/QWIIC — в [HARDWARE.md](HARDWARE.md).
-
----
-
-## 8. Где что лежит
+## 8. Structure
 
 ```
-src/
-  main.cpp                 setup/loop → Core
-  core/                    Core, ModuleManager, EventBus, Scheduler,
-                           Settings, Clock, Logger, Module.h, SpiBus
-  hal/                     Display(TFT_eSPI), CC1101, InfraRed, board_pins.h
-  modules/<Name>Module/    одна подсистема = один модуль (IModule)
-  ui/
-    UIManager, UITheme, Screen.h, Splash, StatusOverlay, Notify, i18n
-    fonts/                 varsys_* (Inter+кириллица+иконки Tabler, 4bpp сжатые)
-    screens/               ~30 экранов (Screen)
-include/
-  varsys_config.h          тайминги/константы
-  lv_conf.h                конфиг LVGL (LV_USE_FONT_COMPRESSED=1 обязателен!)
-boards/                    кастомный board JSON (16MB / OPI PSRAM)
-flasher/                   веб-прошивальщик (ESP Web Tools) + бинарники
-docs/                      эта документация
+src/main.cpp · core/ · hal/ · modules/<Name>Module/ · ui/(UIManager,screens,fonts,i18n)
+include/varsys_config.h · include/lv_conf.h (LV_USE_FONT_COMPRESSED=1!)
+boards/ · flasher/ · docs/
 ```
 
----
-
-## 9. Принятые архитектурные решения
-
-- **Модульность вместо монолита** (в отличие от Bruce) — каждая подсистема
-  изолирована, добавление локально.
-- **Кооперативное ядро** — простота ценой отзывчивости при блокирующих операциях.
-- **Один `SPIClass` (TFT_eSPI) на всю шину** — как в Bruce (после отказа от
-  LovyanGFX), ради совместимости CC1101/SD/дисплея.
-- **Граница ассистента**: широкополосная глушилка и массовый BLE/Apple-spam —
-  намеренно заглушки (раздел «Эксперт»), реализуется только для лаборатории.
+## 9. Architectural decisions
+- Modularity over monolith (unlike Bruce).
+- Cooperative core — simplicity at the cost of responsiveness.
+- One `SPIClass` (TFT_eSPI) for the whole bus.
+- Boundary: broadband jammer / mass spam are deliberate stubs (Expert section).

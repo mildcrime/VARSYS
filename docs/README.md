@@ -1,28 +1,31 @@
-# VARSYS — Документация
+# VARSYS — Documentation / Документация
 
-## Для разработчика (как всё устроено и как дорабатывать)
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — слои, ядро, модель исполнения, порядок
-  инициализации, потоки данных. **Начни отсюда.**
-- **[MODULES.md](MODULES.md)** — каталог всех модулей: API, железо, нюансы.
-- **[UI.md](UI.md)** — LVGL-фреймворк, экраны, темы, локализация, шрифты.
-- **[ALGORITHMS.md](ALGORITHMS.md)** — ключевые алгоритмы (OOK-декод, brute, RMT,
-  NFC-дамп, энкодер, Mousejack, карусель, энергосбережение).
-- **[HARDWARE.md](HARDWARE.md)** — распиновка, общие ресурсы (SPI/RMT/QWIIC/I2C),
-  конфиг дисплея, сборка/прошивка/логи, история граблей bring-up.
-- **[EXTENDING.md](EXTENDING.md)** — рецепты: добавить модуль/экран/плитку/строку/
-  настройку/CLI/иконку/протокол; рабочий цикл на железе.
+Each developer doc exists in **English** and **Русский** (language switcher at the
+top of every page). Каждый документ есть на двух языках.
 
-## Для пользователя
-- [USAGE_EN.md](USAGE_EN.md) / [USAGE_RU.md](USAGE_RU.md) — как пользоваться.
+## Developer docs / Для разработчика
+| Topic / Тема | EN | RU |
+|---|---|---|
+| Architecture / Архитектура | [ARCHITECTURE.md](ARCHITECTURE.md) | [ARCHITECTURE.ru.md](ARCHITECTURE.ru.md) |
+| Modules / Модули | [MODULES.md](MODULES.md) | [MODULES.ru.md](MODULES.ru.md) |
+| UI framework / UI-фреймворк | [UI.md](UI.md) | [UI.ru.md](UI.ru.md) |
+| Algorithms / Алгоритмы | [ALGORITHMS.md](ALGORITHMS.md) | [ALGORITHMS.ru.md](ALGORITHMS.ru.md) |
+| Hardware / Железо | [HARDWARE.md](HARDWARE.md) | [HARDWARE.ru.md](HARDWARE.ru.md) |
+| Extending / Доработки | [EXTENDING.md](EXTENDING.md) | [EXTENDING.ru.md](EXTENDING.ru.md) |
 
-## Прочее
-- [../BACKLOG.md](../BACKLOG.md) — известные проблемы и план доработок.
-- [../README.md](../README.md) / [../README.ru.md](../README.ru.md) — обзор проекта.
-- [../DISCLAIMER.md](../DISCLAIMER.md) — только авторизованное использование.
+**Start here / Начни отсюда:** Architecture → Hardware → Extending.
 
-## Быстрый старт разработчика
-1. Прочитать ARCHITECTURE.md (модель исполнения + порядок init) и HARDWARE.md
-   (общие ресурсы + грабли).
-2. Сборка: `pio run -e t-embed-cc1101`.
-3. Прошивка: download mode = **вдавить колесо-энкодер + RST**, затем `-t upload`.
-4. Доработка: см. EXTENDING.md.
+## User docs / Для пользователя
+[USAGE_EN.md](USAGE_EN.md) · [USAGE_RU.md](USAGE_RU.md)
+
+## Other / Прочее
+[../BACKLOG.md](../BACKLOG.md) · [../README.md](../README.md) ·
+[../README.ru.md](../README.ru.md) · [../DISCLAIMER.md](../DISCLAIMER.md)
+
+## Quick start (dev) / Быстрый старт
+1. Read Architecture + Hardware (execution model, shared resources, gotchas).
+2. Build: `pio run -e t-embed-cc1101`.
+3. Flash: download mode = **press the encoder wheel + RST**, then `-t upload`.
+4. Extend: see Extending recipes.
+
+UI mockups / макеты экранов: [UI.md](UI.md#screens-mockups).

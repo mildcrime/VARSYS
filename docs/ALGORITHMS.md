@@ -1,144 +1,61 @@
-# VARSYS — Ключевые алгоритмы
+# VARSYS — Key algorithms
 
-Разбор нетривиальной логики, чтобы менять её осознанно.
+🌐 **English** · [Русский](ALGORITHMS.ru.md)
 
----
+Non-trivial logic explained so you can change it deliberately.
 
-## 1. Энкодер: полушаговый декодер Буxтона (`InputModule.cpp`)
-Квадратурный конечный автомат. На каждом тике читаем 2 бита пинов
-`pins = (A<<1)|B`, переход по таблице `kTable[state][pins]`, эмит при
-`state & 0x30` (DIR_CW=0x10 / DIR_CCW=0x20).
+## 1. Encoder: Buxton half-step decoder (`InputModule.cpp`)
+Quadrature FSM: `pins=(A<<1)|B`, transition `kTable[state][pins]`, emit on
+`state&0x30`. **Half-step** (not full-step) because the T-Embed encoder has
+detents on both 00 and 11 (one half-cycle per detent); the full-step table fired
+CW every other detent and never CCW. Reverse — `VARSYS_ENCODER_REVERSED`.
 
-**Почему полушаговая, а не полношаговая:** у энкодера T-Embed детенты и на 00, и
-на 11 (один полуцикл на детент). Полношаговая таблица эмитила раз в 2 детента для
-CW и не доходила до эмита для CCW. Полушаговая (`R_*_M` состояния) эмитит на каждый
-полуцикл = ровно одно событие на детент в обе стороны. Проверено сырым логом A/B.
+## 2. OOK Sub-GHz decoder (`RfDecoder.cpp`)
+1) `te` = min pulse (80…1500). 2) sync = longest pulse. 3) PWM decode:
+`(te,3te)=0`, `(3te,te)=1`, ±45% tol. 4) classify by bits/te (Princeton/EV1527,
+Nice FLO, CAME, Holtek). 5) rolling-code: long uniform preamble → "KeeLoq/rolling"
+(key not extracted).
 
-Реверс направления — `#define VARSYS_ENCODER_REVERSED 1`.
+## 3. Fixed-code bruteforce (`RfBrute.h`)
+Full-frame sweep over a protocol table; `protoIdx==count` = "All". Blocking,
+aborted by Back → auto-saves the candidate window (`/brute/found_*.txt`). Auto-
+replay (`replayCandidates`) → confirmed code (`/brute/confirmed_*.sub`).
 
----
+## 4. RMT capture/replay (`CC1101.cpp`, `InfraRed.cpp`)
+RMT (1 tick = 1 µs). Capture — RX via ringbuffer, "mark-first", end = idle gap.
+Replay — RMT TX, split >32767 µs, carrier 38 kHz (IR) / 40 kHz (Sony). Channels:
+CC1101=2, IR=3 (FastLED=0); driver installed/uninstalled per operation.
 
-## 2. OOK-декодер Sub-GHz (`RadioModule/RfDecoder.cpp`)
-Вход: вектор длительностей импульсов (мкс, уровни чередуются). Шаги:
-1. **te** (базовая длительность) = минимальный значимый импульс (80…1500 мкс).
-2. **Синхро** = самый длинный импульс (длинная межкадровая пауза) — точка старта.
-3. **PWM-декод** после синхро: пара `(te, 3·te)=0`, `(3·te, te)=1` (tol ±45%),
-   до 64 бит или до несовпадения.
-4. **Классификация** по числу бит и te: 23–25 → Princeton/EV1527; 12 (te≥550) →
-   Nice FLO; 12 → CAME; 8–10 → Holtek; иначе OOK.
-5. **Rolling-code** (если PWM не распознан): ищем длинную однородную преамбулу
-   (≥20 равных коротких импульсов до длинной паузы, te 200…800) → «KeeLoq/rolling»
-   (ключ не извлекается — он меняется; идентифицируем семейство).
+## 5. IR encoders (`InfraRed.cpp`)
+NEC (9000/4500, 32 bits, 0=560/560, 1=560/1690), NEC-ext (16-bit addr), Samsung
+(4500/4500), Sony SIRC (2400/600, 40 kHz, ×3). No RC5 (its Manchester starts with
+a space). Universal remote — `U_*` tables in `IrModule.cpp`.
 
-Расширение: добавить протокол = новая ветка классификации (или новый декодер
-для не-PWM, напр. Manchester/KeeLoq-ключ).
-
----
-
-## 3. Перебор фикс-кодов (`RadioModule` + `RfBrute.h`)
-Полнокадровый перебор: для протокола из таблицы `RfBrute` генерируем кадр по
-коду и тайминам бит, шлём `repeats` раз, инкремент кода. `protoIdx == count` —
-режим «All» (все протоколы подряд). Блокирующий; прерывается кнопкой «назад».
-- При прерывании **автосохраняет** окно последних ~48 кодов как кандидатов
-  (`/brute/found_*.txt`).
-- **Автопрогон** (`replayCandidates`): прокручивает сохранённое окно по одному с
-  паузой; прерывание подтверждает текущий код → `/brute/confirmed_*.sub`.
-- Только против своего/авторизованного приёмника (см. USAGE).
-
----
-
-## 4. RMT захват/воспроизведение (`hal/CC1101.cpp`, `hal/InfraRed.cpp`)
-Аппаратный RMT (legacy `driver/rmt.h`, 1 тик = 1 мкс).
-- **Захват** (`captureRaw`): RX через ringbuffer, длительности «mark-first»
-  (первый импульс — несущая/засветка вкл), конец кадра = idle-пауза (CC1101 ~12мс).
-- **Воспроизведение** (`transmitRaw`/`sendRaw`): RMT TX, дробление импульсов
-  >32767 мкс; для ИК — несущая 38 кГц (carrier_en), Sony — 40 кГц.
-- **Каналы**: CC1101=ch2, IR=ch3 (FastLED держит ch0). Драйвер ставится/снимается
-  на операцию (`rmt_driver_install/uninstall`).
-
----
-
-## 5. ИК-кодировщики протоколов (`hal/InfraRed.cpp`)
-Строят raw-импульсы и шлют через `sendRaw(carrier)`:
-- **NEC**: лидер 9000/4500, 32 бита (addr, ~addr, cmd, ~cmd), бит 0=560/560,
-  1=560/1690, стоп-mark; LSB-first; 38 кГц.
-- **NEC-ext**: 16-бит адрес (без инверсии) + cmd + ~cmd.
-- **Samsung**: лидер 4500/4500, (addr, addr, cmd, ~cmd).
-- **Sony SIRC**: лидер 2400/600, бит 1=1200/600, 0=600/600; cmd(7 бит)+addr;
-  40 кГц; **3 повтора кадра**.
-- RC5 (Philips) пока нет — его Manchester начинается с паузы, а `sendRaw`
-  mark-first; нужно расширить `sendRaw` поддержкой старта со space.
-
-Универсальный пульт (`IrModule::sendUniversal`) — таблицы `U_*` (функция →
-несколько брендов), sweep с задержкой.
-
----
-
-## 6. NFC: полный дамп со словарём (`NfcModule.cpp`)
-Mifare Classic 1K (16 секторов × 4 блока):
-1. Прочитать UID (`readPassiveTargetID`).
-2. Для каждого сектора: перебрать словарь `DICT[]` (FFFF.., MAD, NDEF, transport…)
-   — `mifareclassic_AuthenticateBlock` ключом A на первый блок сектора; нашли →
-   сохранить ключ, прочитать 4 блока. Затем то же для ключа B (для записи).
-3. Сохранить дамп текстом (`Sector N KeyA/KeyB`, `Block NN: hex`) → `/nfc/<uid>.dump`.
-4. **Клон** (`cloneDump`): авторизация найденным ключом → запись дата-блоков назад
-   (блок 0 — только на magic-карте).
-- Ограничение: вскрывает только карты со словарными ключами.
-
----
+## 6. NFC: dictionary dump (`NfcModule.cpp`)
+Mifare 1K: UID → per sector try `DICT[]` keys A/B → read blocks → save
+`/nfc/<uid>.dump`. Clone — write data blocks back (block 0 needs a magic card).
+Dictionary keys only.
 
 ## 7. Mousejack (`NrfModule.cpp`)
-HID-инъекция в беспроводные мыши/клавиатуры (авторизованное тестирование):
-- **Promiscuous-скан** (`mjScan`): addr width 2, «адрес»-преамбула 0x00AA,
-  слушаем каналы Unifying; первые 5 байт payload трактуем как реальный адрес ESB,
-  дедуп. ⚠️ Битовое выравнивание ESB зависит от чипа — подстраивать на железе.
-- **Ping** (`mjPing`): свип каналов 0-длинным ESB-кадром, ACK = активный канал.
-- **Инъекция** (`mjInject`): кадр Logitech Unifying unencrypted (10 байт:
-  `00 C1 mod usage*6 cksum`, cksum = доп. до нуля суммы байт; затем кадр
-  отпускания). US ascii→HID usage.
-
----
+`mjScan` — promiscuous (addr width 2, preamble 0x00AA, first 5 bytes = address;
+ESB bit-alignment needs on-device tuning). `mjPing` — active channel via ACK.
+`mjInject` — Logitech Unifying unencrypted keyboard frame (10 bytes
+`00 C1 mod usage*6 cksum` + release).
 
 ## 8. Wardrive (`WardriveModule.cpp`)
-`activate()` занимает GPS, открывает `/wardrive.csv` (заголовок WiGLE-1.4 если
-файл новый). Таймер Scheduler (4с) → `tick()`: WiFi-скан, для каждого нового
-BSSID (дедуп `std::set`) пишет строку `MAC,SSID,Auth,FirstSeen,Channel,RSSI,
-Lat,Lon,...` с текущей позицией GPS. SSID чистится от запятых/переводов строк.
-`deactivate()` — стоп таймера, `WIFI_OFF`, освобождение GPS.
+`activate` → GPS + `/wardrive.csv` (WiGLE header). 4 s timer: WiFi scan, new
+BSSIDs (deduped) + GPS → CSV line. `deactivate` → stop + `WIFI_OFF` + release GPS.
 
----
+## 9. Home carousel (`HomeScreen.cpp`)
+`applyFocus`: distance to center → opacity, pick nearest, border, label, LED color.
+Instant scroll (`LV_ANIM_OFF`). ⚠️ `transform_zoom` is NOT used (it failed to draw
+the center tile).
 
-## 9. Карусель Home (`HomeScreen.cpp`)
-- Плитки в flex-row, scroll-snap по центру, паддинги по краям центрируют первую.
-- `applyFocus()` (по событию скролла): для каждой плитки считает расстояние до
-  центра вьюпорта → прозрачность (фокусная ярче), выбирает ближайшую (`best`),
-  ставит рамку, обновляет подпись и **LED-цвет** (`updateLed`, гард `_ledTile`
-  чтобы не дёргать FastLED на каждый пиксель).
-- Прокрутка **мгновенная** (`LV_ANIM_OFF`) — плавная анимация на маленьком буфере
-  давала тиринг.
-- ⚠️ `transform_zoom` НЕ используется: в LVGL8 самая увеличенная (центральная)
-  плитка не выводилась.
+## 10. Power saving (`PowerModule.cpp`)
+`sleepMs=screenTimeoutSec*1000`, `dimMs=2/3`. Off → brightness 0 + CPU 80 MHz;
+wake → 240 + brightness. ⚠️ `idle=(now>=last)?now-last:0` (underflow guard).
 
----
-
-## 10. Энергосбережение (`PowerModule.cpp`)
-`update(now)`: `sleepMs = screenTimeoutSec()*1000` (0 = никогда), `dimMs = 2/3
-sleepMs`. При `idle > sleepMs` — яркость 0 + CPU 240→80 МГц (`_lowPower`); при
-`idle > dimMs` — затемнение. `wake()` (по вводу) — вернуть CPU 240 + яркость.
-⚠️ `idle = (now >= _lastActivity) ? now - _lastActivity : 0` — защита от
-underflow (см. ARCHITECTURE §3).
-
----
-
-## Формат сигналов `.sub` (совместим с Flipper)
-`StorageModule::saveSignal` пишет:
-```
-Filetype: Flipper SubGhz RAW File
-Version: 1
-Frequency: <Hz>
-Preset: FuriHalSubGhzPresetOok650Async
-Protocol: RAW
-RAW_Data: <знаковые длительности, ≤512 на строку, знак = уровень>
-```
-`loadSignal` терпим: читает Frequency (Hz→kHz) и многострочный RAW_Data, стартовый
-уровень — по знаку первого значения. Файлы открываются и на Flipper, и у нас.
+## `.sub` format (Flipper)
+`saveSignal` writes `Filetype: Flipper SubGhz RAW File / Frequency(Hz) / Preset
+Ook650Async / RAW_Data (≤512/line, sign = level)`. `loadSignal` is tolerant
+(multi-line RAW_Data, start level from first sign). Files are Flipper-compatible.

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 170" width="640" height="340" font-family="-apple-system, Segoe UI, Inter, sans-serif">
+  <rect width="320" height="170" rx="10" fill="#000000"/>
+  <!-- status bar -->
+  <text x="10" y="16" fill="#8e8e93" font-size="11">9:41</text>
+  <rect x="288" y="7" width="22" height="11" rx="2.5" fill="none" stroke="#8e8e93" stroke-width="1"/>
+  <rect x="290" y="9" width="14" height="7" rx="1" fill="#30d158"/>
+  <!-- carousel: left peek, center focused, right peek -->
+  <g opacity="0.45">
+    <rect x="6" y="58" width="60" height="60" rx="16" fill="#FF453A"/>
+  </g>
+  <g>
+    <rect x="118" y="46" width="84" height="84" rx="22" fill="#FF9F0A" stroke="#0a84ff" stroke-width="3"/>
+    <text x="160" y="98" fill="#ffffff" font-size="34" text-anchor="middle">⌁</text>
+  </g>
+  <g opacity="0.45">
+    <rect x="254" y="58" width="60" height="60" rx="16" fill="#0A84FF"/>
+  </g>
+  <!-- label -->
+  <text x="160" y="152" fill="#ffffff" font-size="15" text-anchor="middle" font-weight="600">Sub-GHz</text>
+  <!-- caption -->
+  <text x="160" y="166" fill="#48484a" font-size="8" text-anchor="middle">схематичный макет · schematic mockup (HomeScreen)</text>
+</svg>
