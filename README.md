@@ -75,7 +75,16 @@ monitor exposes the CLI — type `help`.
 ## Usage
 
 Full guides: **[USAGE (EN)](docs/USAGE_EN.md)** · [USAGE (RU)](docs/USAGE_RU.md).
-Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Developer documentation
+
+Start here to understand the codebase and extend it — **[docs/](docs/README.md)**:
+[Architecture](docs/ARCHITECTURE.md) ·
+[Modules](docs/MODULES.md) ·
+[UI](docs/UI.md) ·
+[Algorithms](docs/ALGORITHMS.md) ·
+[Hardware](docs/HARDWARE.md) ·
+[Extending (recipes)](docs/EXTENDING.md).
 
 Quick examples (use only on hardware you own or are authorized to test):
 - **Audit a fixed‑code receiver you own (bruteforce):** put your own gate/barrier
